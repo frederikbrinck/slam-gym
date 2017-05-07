@@ -35,11 +35,11 @@ classdef Sensing
             % Use Geom2.d to do math.
             % We read obj.angle radians from startVec to endVec
             % We read angles in degrees based on the resolution
-            read = ones(1,round(obj.angle/obj.resolution)+1);
+            read = ones(round(obj.angle/obj.resolution)+1,1);
             startAng = -obj.angle/2;
             endAng = obj.angle/2;
             count = 1;            
-            for i = startAng:obj.resolution:endAng
+            for i = endAng:-obj.resolution:startAng
                 a = deg2rad(i);
                 R = [cos(a),-sin(a);sin(a),cos(a)];
                 % Calculating the vector
@@ -47,7 +47,29 @@ classdef Sensing
                 sep = Geom2d.closestPoint(x,y,vec,obj.env,obj.limit);
                 read(count) = sep;
                 count = count+1;
-            end       
+                plot([x,x+vec(1)*sep],[y,y+vec(2)*sep])
+            end
+        end
+        
+        % Plots the lines of the laser scan
+        % where
+        %   x       the real x position of the robot
+        %   y       the real y position of the robot
+        %   dir     the direction of the robot
+        %   read    the array of separations from the scan
+        function plotScan(obj,x,y,dir,read)
+            obj.env.showEnv();
+            count = 1;            
+            for i = obj.angle/2:-obj.resolution:-obj.angle/2
+                a = deg2rad(i);
+                R = [cos(a),-sin(a);sin(a),cos(a)];
+                % Calculating the vector
+                hold on;
+                vec = R*dir;            
+                plot([x,x+vec(1)*read(count)],[y,y+vec(2)*read(count)])
+                count = count+1;
+            end
+            hold off;
         end
         
         % Returns a reading from the current environment and adds
@@ -70,18 +92,20 @@ classdef Sensing
             end
             a = Environment;
             a = a.readFile(filename);
-            res = 20;
-            s = Sensing(a,res,180,10);
-%             x = randi([0 10],1,1);
-%             y = randi([0 10],1,1);
-%             dir = randi([-5 5], 2,1);
+            res = 5;
+            limit = 10;
+            angle = 180;
+            s = Sensing(a,res,angle,limit);
             x = 8;
             y = 2;
-            dir = [0;1];
-            disp(s.laserRead(x,y,dir));
-            a.showEnv();
+            dir = randi([-5 5], 2,1);
+            disp('Sensing');
+            dir = dir/norm(dir);
+            disp('Displaying the scan as an array');
+            read = s.laserRead(x,y,dir);
+            disp(read);
+            disp('Plotting the lines');
+            s.plotScan(x,y,dir,read);
         end
-    end
-    
+    end 
 end
-
