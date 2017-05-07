@@ -15,7 +15,7 @@ classdef Sensing
         % Our constructor function setting the needed parameters
         %   env         the environment
         %   res         the resolution of the laser
-        %   angle       the angle for the readings
+        %   angle       the angle for the readings in degrees
         %   limit       maximum range of sensor
         function obj = Sensing(env, res, angle, lim)
             obj.env = env;
@@ -34,10 +34,10 @@ classdef Sensing
         function read = laserRead(obj, x, y, dir)
             % Use Geom2.d to do math.
             % We read obj.angle radians from startVec to endVec
-            % We read angles based on the resolution
-            read = ones(1,round(rad2deg(obj.angle)/obj.resolution)+1);
-            startAng = -rad2deg(obj.angle/2);
-            endAng = rad2deg(obj.angle/2);
+            % We read angles in degrees based on the resolution
+            read = ones(1,round(obj.angle/obj.resolution)+1);
+            startAng = -obj.angle/2;
+            endAng = obj.angle/2;
             count = 1;            
             for i = startAng:obj.resolution:endAng
                 a = deg2rad(i);
@@ -71,7 +71,7 @@ classdef Sensing
             a = Environment;
             a = a.readFile(filename);
             res = 20;
-            s = Sensing(a,res,pi,10);
+            s = Sensing(a,res,180,10);
 %             x = randi([0 10],1,1);
 %             y = randi([0 10],1,1);
 %             dir = randi([-5 5], 2,1);
