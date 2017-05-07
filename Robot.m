@@ -52,7 +52,7 @@ classdef Robot < Odometry
             env = Environment;
             env = env.readFile(filename);
             env.showEnv();
-            r = Robot(8,2,90,180,10,env);
+            r = Robot(2,2,90,180,10,env);
             read = r.laserRead();
             r.sensing.plotScan(r.x,r.y,r.dir,read);
         end
