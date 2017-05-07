@@ -8,8 +8,7 @@ classdef Environment < handle
      properties
         boundX = [];
         boundY = [];
-        polyX = {};
-        polyY = {};
+        polygons = {}
     end
 
 
@@ -24,10 +23,10 @@ classdef Environment < handle
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
          function obj = readFile(obj, filename) %fills all the properties
             itr = 1; % Logic for populating fields.
-            pol = 1; % Logic for populating polygons fields.
             % Iterate through file.
             fileDesc = fopen(filename, 'r');
             tline = fgetl(fileDesc);
+            polyX = [];
             while ischar(tline)
                 if size(tline, 1) > 0 && (tline(1) ~= '%')
                     str = regexprep(tline, '[^\d.]*', ' '); % Remove all non digits.
@@ -41,13 +40,12 @@ classdef Environment < handle
                             obj.boundY = c;
                             itr = itr + 1;
                         case 3
-                            obj.polyX{pol} = c;
+                            polyX = c;
                             itr = itr + 1;
                         case 4
-                            obj.polyY{pol} = c;
+                            obj.polygons{end + 1} = [polyX c]';
                             % Loop back to collect next elements
                             itr = itr - 1;
-                            pol = pol + 1;
                     end
                 end
                 tline = fgetl(fileDesc);
@@ -58,21 +56,6 @@ classdef Environment < handle
          end
 
 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	 % Display Robot at conf(a,b) with color c 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-         function d = showDisc(obj, a, b, color, radius)
-            if nargin < 5
-                radius = 1;
-            end
-            
-            % Create disc.
-            theta = 0:pi/50:2*pi;
-            x = radius * cos(theta) + a;
-            y = radius * sin(theta) + b;
-            % Fill disc.
-            d = patch(x, y, color);
-         end
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	 % Display Bounding Box 
@@ -93,29 +76,26 @@ classdef Environment < handle
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	 % Display Environment:
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-       function obj = showEnv(obj)
-	     figure(1);
-	     clf(1);  % Clear fig 1.
-	     axis square tight;
-	     % Show Bounding Box.
-         obj.showBound();
-         
-	     % Display obstacles in brown.
-	     brown = [0.8, 0.5, 0];
-	     for i = 1:length(obj.polyX)
-             if Geom2d.isPoint(obj.polyX{i}) % Check if we are displaying a point.
-                    obj.showDisc(obj.polyX{i}, obj.polyY{i}, brown, 0.04);
-                else
-                    patch(obj.polyX{i}, obj.polyY{i}, brown);
-             end
-         end
-         
-         % Transparency (to show overlaps).
-    	 alpha(0.3);	
-         
-	     % Output an image file.
-	     obj.outputFile('image.jpg');
-       end
+        function obj = showEnv(obj, bool)
+            if nargin < 2
+                bool = true;
+            end
+            
+            % Create a new figure.
+            if bool
+                figure(1);
+                clf(1);
+                axis square tight;
+            end
+            
+	        % Show Bounding Box.
+            obj.showBound();
+                     
+            % Display obstacles in brown.
+            brown = [0.8, 0.5, 0];
+            Draw.polygons(obj.polygons, brown);
+            alpha(0.3);
+        end
      end
 
 
@@ -124,7 +104,7 @@ classdef Environment < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function a = test(filename)
             if nargin < 1
-                filename = 'env.txt';
+                filename = 'environments/env.txt';
             end
             
             a = Environment;
