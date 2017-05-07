@@ -1,7 +1,13 @@
 %{
-	Sensing class.
+	% Sensing class.
 
-    Explanation goes here...
+    % This is a property of the Robot class
+    % This class helps with laser scanning and returns an array of 
+    % separation from the nearest obstacle given the robot position. It
+    % scans from left to right and scans for a number of degrees specified
+    % by angle. 
+    
+    % This output can be plotted using the plotScan() function.
 %}
 classdef Sensing
     properties
