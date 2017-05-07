@@ -64,13 +64,34 @@ classdef Geom2d
         % and calls sepPointEdgeDir for all the edges in the polygons. It
         % returns the separation from the robot point (x,y) to the closest
         % point in the environment. 
-        function minSep = closestPoint(x,y,vec,env,lim)
+        function minSep = closestPoint(x,y,vec,a,lim)
             minSep = lim;
-            edge = [0,10;10,10];
-            for i = 1:1
-                sep = Geom2d.sepPointEdgeDir(x,y,vec,edge);
-                if (sep < minSep)
-                    minSep = sep;
+            pol = a.polygons;
+            pol{end+1} = [a.boundX';a.boundY'];
+            for i = 1:length(pol)
+                len = size(pol{i},2);
+                if len > 1
+                    for j = 1:len
+                        edge(1,1) = pol{i}(1,j);
+                        edge(1,2) = pol{i}(2,j);
+                        if j == len
+                            edge(2,1) = pol{i}(1,1);
+                            edge(2,2) = pol{i}(2,1);
+                        else
+                            edge(2,1) = pol{i}(1,j+1);
+                            edge(2,2) = pol{i}(2,j+1);
+                        end                        
+                        sep = Geom2d.sepPointEdgeDir(x,y,vec,edge);
+                        if (sep < minSep)
+                            minSep = sep;
+                        end
+                    end
+                else
+                    % Checking separation with point polygons
+                    sep = Geom2d.checkPoint(x,y,vec,pol{i});
+                    if (sep < minSep)
+                        minSep = sep;
+                    end
                 end
             end
         end
@@ -82,7 +103,7 @@ classdef Geom2d
             % Help obtained from here
             % https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection
             query = [x,y;x+vec(1)*10,y+vec(2)*10];
-            sep = 100;
+            sep = 10;
             x1 = x;
             y1 = y;
             x2 = query(2,1);
@@ -99,18 +120,34 @@ classdef Geom2d
             pyDen = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
             pX = pxNum/pxDen;
             pY = pyNum/pyDen;
-            if Geom2d.onEdge([pX,pY],edge)
+            
+            if Geom2d.onEdge([pX,pY],edge) && Geom2d.onEdge([pX,pY],query)
                 sep = norm([pX-x,pY-y]);
+            end
+        end
+        
+        % Checks the separation between our robot and a point polygon,
+        % given a particular direction and the position of the robot. If
+        % the point polygon and the vector from the robot don't intersect,
+        % this returns a large value (like 1000).
+        function sep = checkPoint(x,y,vec,point)
+            sep = 1000;
+            query = [x,y;x+vec(1)*10,y+vec(2)*10];
+            b = cross([query(1,:)-query(2,:),0],[x-point(1)...
+                y-point(2),0]);
+            if Geom2d.onEdge(point,query) && abs(b(3)) < 0.0001
+                sep = norm([point(1)-x,point(2)-y]);
             end
         end
         
         % Returns true if a point is contained within an edge. Useful for 
         % figuring out whether an intersection point is valid or not.
         function bool = onEdge(point,edge)
-            if point(1) <= max(edge(1,1),edge(2,1)) ...
-               && point(1) >= min(edge(1,1),edge(2,1)) ...
-               && point(2) <= max(edge(1,2),edge(2,2)) ...
-               && point(2) >= min(edge(1,2),edge(2,2))
+            e = 0.0001;
+            if point(1) <= max(edge(1,1),edge(2,1)) +e ...
+               && point(1) >= min(edge(1,1),edge(2,1)) - e ...
+               && point(2) <= max(edge(1,2),edge(2,2)) + e  ...
+               && point(2) >= min(edge(1,2),edge(2,2)) -e
                bool = 1;
             else
                 bool = 0;
@@ -121,7 +158,15 @@ classdef Geom2d
             filename = 'environments/env.txt';
             a = Environment;
             a = a.readFile(filename);
-            Geom2d.closestPoint(0,1,[0,1],a,5);
+            dir = [0;1];
+            b = deg2rad(-60);
+            R = [cos(b),-sin(b);sin(b),cos(b)];
+            % Calculating the vector
+            vec = R*dir;
+            % disp(Geom2d.closestPoint(6,1,vec,a,10));   
+            disp(Geom2d.sepPointEdgeDir(6,1,vec,[10,10;10,0]));
+            disp(Geom2d.onEdge([10,3.3094],[10,10;10,0]));
+            a.showEnv();
         end
         
         function [] = test(filename)
