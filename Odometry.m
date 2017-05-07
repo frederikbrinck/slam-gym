@@ -48,13 +48,13 @@ classdef Odometry
     	function move(obj, dx, dy, dtheta)
     		% Make sure our robot moves reasonably.
     		if dx > obj.maxDist
-    			dx = obj.maxDist
+    			dx = obj.maxDist;
     		end
     		if dy > obj.maxDist
-    			dy = obj.maxDist
+    			dy = obj.maxDist;
     		end
     		if dtheta > obj.maxTheta
-    			dtheta = obj.maxTheta
+    			dtheta = obj.maxTheta;
     		end
 
     		obj.x = obj.x + dx;

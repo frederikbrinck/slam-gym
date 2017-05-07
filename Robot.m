@@ -5,7 +5,7 @@
 	as the superclass of Algorithm.
 %}
 
-classdef Robot < Odometry & Sensing
+classdef Robot < Odometry
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties
@@ -14,8 +14,10 @@ classdef Robot < Odometry & Sensing
     	% cannot tell the exact length for a specific angle or if the 
     	% length is bigger than the threshold, the laser scanner will 
     	% simply return the threshold as the range for the angle.
-    	laserThreshold = 8.1;
-    	degreesPerScan = 0.5; % This is in terms of degrees, not radians.
+    	laserThreshold = 10;
+    	degreesPerScan = 5; % This is in terms of degrees, not radians.
+        sensing;
+        dir;
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -23,7 +25,7 @@ classdef Robot < Odometry & Sensing
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     	% Constructor for Robot
-    	function obj = Robot(x, y, theta, maxTheta, maxDist)
+    	function obj = Robot(x, y, theta, maxTheta, maxDist, env)
     		if nargin < 4
     			maxTheta = 30;
     			maxDist = 0.1;
@@ -31,11 +33,28 @@ classdef Robot < Odometry & Sensing
 
     		% Call the constructor for odometry.
     		obj = obj@Odometry(x, y, theta, maxTheta, maxDist);
+            % Create a sensing object for this robot
+    		obj.sensing = Sensing(env, obj.degreesPerScan,...
+                maxTheta, obj.laserThreshold);
+            obj.dir = [cos(deg2rad(obj.theta));sin(deg2rad(obj.theta))];
     	end
 
     	function scanOutput = laserRead(obj)
-    		scanOutput = Sensing.laserRead(obj.laserThreshold, ... 
-    			obj.degreesPerScan);
+    		scanOutput = obj.sensing.laserRead(obj.x,obj.y,obj.dir);
     	end
     end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods(Static)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        function r = test()
+            filename = 'environments/env.txt';
+            env = Environment;
+            env = env.readFile(filename);
+            env.showEnv();
+            r = Robot(8,2,90,180,10,env);
+            read = r.laserRead();
+            r.sensing.plotScan(r.x,r.y,r.dir,read);
+        end
+    end 
 end

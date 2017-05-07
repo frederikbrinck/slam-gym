@@ -47,7 +47,6 @@ classdef Sensing
                 sep = Geom2d.closestPoint(x,y,vec,obj.env,obj.limit);
                 read(count) = sep;
                 count = count+1;
-                plot([x,x+vec(1)*sep],[y,y+vec(2)*sep])
             end
         end
         
