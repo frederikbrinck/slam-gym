@@ -1,42 +1,41 @@
 %{
-	Robot class.
+	Created by Mufei Li on 2017/05/04.
 
-    Explanation goes here...
+	This file is an abstract robot class that serves
+	as the superclass of Algorithm.
 %}
-classdef Robot < Odometry & Sensing
-    properties
 
+classdef Robot < Odometry & Sensing
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    properties
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    	% Set the threshold for the laser scanner. If the laser scanner 
+    	% cannot tell the exact length for a specific angle or if the 
+    	% length is bigger than the threshold, the laser scanner will 
+    	% simply return the threshold as the range for the angle.
+    	laserThreshold = 8.1;
+    	degreesPerScan = 0.5; % This is in terms of degrees, not radians.
     end
-    
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        function obj = Robot(sEnv, oTheta, oDist, sRes, sAngle)
-            obj@Odometry(oTheta, oDist);
-            obj@Sensing(sEnv, sRes, sAngle);
-        end
-    end
-    
-    % Functions accessible from subclasses
-    methods(Access = protected)
-        % Returns the laser read to the user algorithm: This class must use
-        % the odometry real position to pass it into the sensing read 
-        % position. This is necessary to restrict the user from getting
-        % access to the real position.
-        function read = laserRead(obj)
-        
-        end
-        
-        % Returns the position and the direction faced with added noise. 
-        function [x, y, dir] = getPosition(obj)
-            % Use the super class odometry.
-        end
-        
-        % Move the robot in direction by a distance and return
-        % noisy position
-        %   dir      angle relative to robot direction in which to move
-        %   dist     distance to move
-        function [x, y] = move(obj, dir, dist)
-            % Call super class odometry.
-        end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    	% Constructor for Robot
+    	function obj = Robot(x, y, theta, maxTheta, maxDist)
+    		if nargin < 4
+    			maxTheta = 30;
+    			maxDist = 0.1;
+    		end
+
+    		% Call the constructor for odometry.
+    		obj = obj@Odometry(x, y, theta, maxTheta, maxDist);
+    	end
+
+    	function scanOutput = laserRead(obj)
+    		scanOutput = Sensing.laserRead(obj.laserThreshold, ... 
+    			obj.degreesPerScan);
+    	end
     end
 end
-
