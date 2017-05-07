@@ -1,51 +1,65 @@
 %{
-	Odometry class.
+	Created by Mufei Li on 2017/05/07.
 
-    Explanation goes here...
+	Implementation of Odometry class, a super 
+	class for Robot.
 %}
+
 classdef Odometry
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties
-        x;              % robot x position
-        y;              % robot y position
-        dir;            % direction robot is facing
-        maxTheta = 0.1; % constraint on rotation
-        maxDist = 0.1;  % constraint on movement
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    	x;        % robot x position
+    	y;		  % robot y position 
+    	theta;	  % direction robot is facing
+    	maxTheta  % constraint on rotation
+    	maxDist   % constraint on movement 
     end
-    
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
-        function obj = Odometry(mTheta, mDist)
-            obj.maxTheta = mTheta;
-            obj.maxDist = mDist;
-        end
-    end
-    
-    % Functions accessible from subclasses
-    methods(Access = protected)
-        % Reurns the real position and direction of the robot.
-        function [x, y, dir] = getPosition(obj)
-            x = obj.x;
-            y = obj.y;
-            dir = obj.dir;
-        end
-        
-        % Returns the position and the direction faced with added noise. 
-        % Use the Noise.m class to add noise.
-        function [x, y, dir] = getPositionNoisy(obj)
-            % Use obj.getPosition
-        end
-        
-        % Move the robot in direction by a distance and return
-        % noisy position
-        %   dir      angle relative to robot direction in which to move
-        %   dist     distance to move
-        function [x, y] = move(obj, dir, dist)
-            % Set constraints on |dir - obj.dir|
-            % and |dist| to make sure that we don't move unrealistically
-            % using obj.maxTheta and obj.maxDist.
-            
-            % Allow for edge cases where dir or dist is 0, to move 
-            % either straight or rotate, respectively.
-        end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    	%{
+    		Constructor for Odometry
+
+    		Theta is the relative angle of the robot 
+    		and the x axis and is in terms of degrees.
+    	%} 
+    	function obj = Odometry(x, y, theta, maxTheta, maxDist)
+    		if nargin < 4
+    			maxTheta = 30;
+    			maxDist = 0.1;
+    		end
+
+    		obj.x = x;
+    		obj.y = y;
+    		obj.theta = theta;
+    		obj.maxTheta = maxTheta;
+    		obj.maxDist = maxDist;
+    	end
+
+    	% return current position of the Odometry.
+    	function p = getPosition(obj)
+    		p = [obj.x obj.y obj.theta];
+    	end
+
+    	% Move in direction dx, dy and dtheta.
+    	function move(obj, dx, dy, dtheta)
+    		% Make sure our robot moves reasonably.
+    		if dx > obj.maxDist
+    			dx = obj.maxDist
+    		end
+    		if dy > obj.maxDist
+    			dy = obj.maxDist
+    		end
+    		if dtheta > obj.maxTheta
+    			dtheta = obj.maxTheta
+    		end
+
+    		obj.x = obj.x + dx;
+    		obj.y = obj.y + dy;
+    		obj.theta = obj.theta + dtheta;
+    	end
     end
 end
-
