@@ -114,7 +114,7 @@ classdef Environment < handle
     	 alpha(0.3);	
          
 	     % Output an image file.
-	     obj.outputFile('image.jpg');
+	     % obj.outputFile('image.jpg');
        end
      end
 
@@ -124,7 +124,7 @@ classdef Environment < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function a = test(filename)
             if nargin < 1
-                filename = 'env.txt';
+                filename = 'environments/env.txt';
             end
             
             a = Environment;
