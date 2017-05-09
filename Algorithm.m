@@ -59,7 +59,11 @@ classdef Algorithm < Robot
     	% Constructor for Algorithm
     	function obj = Algorithm(x, y, theta, maxTheta, maxDist)
     		% Call the constructor for the robot class.
-    		obj = obj@Robot();
+            if nargin < 4
+                maxTheta = 30;
+                maxDist = 0.1;
+            end
+    		obj = obj@Robot(x, y, theta, maxTheta, maxDist);
     	end
 
     	% Implement RANSAC for extracting line landmarks.
