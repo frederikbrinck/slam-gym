@@ -27,13 +27,13 @@ classdef Algorithm < Robot
     	maxError = 0.2;
 
     	% Number of times a landmark must be observed to be recognized as 
-    	% a landmark.
+    	% a useful landmark.
     	minObservations = 15;
 
     	% Max times to run RANSAC algorithm.
     	maxTrials = 1000;
 
-    	% Max number of samples points to be randomly selected in RANSAC.
+    	% Max number of sample points to be randomly selected in RANSAC.
     	maxSample = 10;
 
     	% For RANSAC, if less than minLinepoints points left, no need to 
@@ -57,7 +57,7 @@ classdef Algorithm < Robot
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     	% Constructor for Algorithm
-    	function obj = Algorithm()
+    	function obj = Algorithm(x, y, theta, maxTheta, maxDist)
     		% Call the constructor for the robot class.
     		obj = obj@Robot();
     	end
@@ -349,7 +349,8 @@ classdef Algorithm < Robot
     		obj.getClosestAssociation(landmark, id, totalTimesObserved);
     	end
 
-    	% Given a landmark, we find the closest landmark in the database.
+    	% Given a landmark, find if it can be associated to a closest existing 
+        % landmark in the database.
     	function getClosestAssociation(obj, landmark, id, totalTimesObserved)
     		closestLandmark = 1;
 
@@ -419,7 +420,7 @@ classdef Algorithm < Robot
     	end
 
     	% Calculate a point on the line closest to origin (0,0) so that
-    	% it can be used as a point for EKF.
+    	% it can be used as a point representation for EKF.
     	function landmark = getLineLandmark(obj, a, b)
     		% First calculate the line perpendicular to the input line.
     		% Assume the line perpendicular to y = ax + b is y = aox + bo.
@@ -649,7 +650,7 @@ classdef Algorithm < Robot
     		end
     	end
 
-    	% Update landmark using EKF results.
+    	% Update a landmark using EKF results.
     	function landmark = updateLandmarkUsingEKF(obj, matched, id, ... 
     		distance, readingNo)
     		landmark = Landmark(obj.LIFE);
