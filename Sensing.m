@@ -104,7 +104,7 @@ classdef Sensing
             r = obj.limit;
             hold on
             % Semi circle
-            Draw.disc([x y],r,obj.angle,dir);
+            Draw.disc([x y],r,obj.angle,dir, [0.5, 0.5, 0]);            
             for i = 1:length(read)
                 p3 = [read{i}(1) read{i}(2)];
                 Draw.disc(p3,0.1,360,90,[0,0,0]);
