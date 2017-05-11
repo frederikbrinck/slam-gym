@@ -32,12 +32,15 @@ classdef EKF < handle
             config = obj.x_hat(1);
         end
         function landmark_j = getLandmark(obj, j)
-            id = j + 1;
-            
+            landmark_j = obj.x_hat((2+2*j):(2+2*j+1));
         end
         % returns current estimate of the landmarks
         function landmarks = getLandmarks(obj)
-            
+            nLandmarks = (size(obj.x_hat, 1) - 3)/2;
+            landmarks = zeros(nLandmarks);
+            for j = 1:nLandmarks
+                landmarks(j) = getLandmark(obj, j);
+            end
         end
         % controls get passed in as a column vector
         function prediction(obj, controls)
