@@ -13,8 +13,9 @@ classdef Odometry
     	x;        % robot x position
     	y;		  % robot y position 
     	theta;	  % direction robot is facing
-    	maxTheta  % constraint on rotation
-    	maxDist   % constraint on movement 
+    	maxTheta; % constraint on rotation
+    	maxDist;  % constraint on movement 
+        radius;   % radius of robot
     end
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,10 +27,11 @@ classdef Odometry
     		Theta is the relative angle of the robot 
     		and the x axis and is in terms of degrees.
     	%} 
-    	function obj = Odometry(x, y, theta, maxTheta, maxDist)
+    	function obj = Odometry(x, y, theta, radius, maxTheta, maxDist)
     		if nargin < 4
     			maxTheta = 30;
     			maxDist = 0.1;
+                radius = 0.5;
     		end
 
     		obj.x = x;
@@ -37,6 +39,7 @@ classdef Odometry
     		obj.theta = theta;
     		obj.maxTheta = maxTheta;
     		obj.maxDist = maxDist;
+            obj.radius = radius;
     	end
 
     	% return current position of the Odometry.

@@ -15,6 +15,7 @@ classdef Sensing
         resolution = 1;     % resolution of readings
         angle = pi;         % angle of readings
         limit = 10;         % maximum range of sensor
+        radius = 1;         % radius of robot
     end
     
     methods(Access = public)
@@ -23,11 +24,19 @@ classdef Sensing
         %   res         the resolution of the laser
         %   angle       the angle for the readings in degrees
         %   limit       maximum range of sensor
-        function obj = Sensing(env, res, angle, lim)
+        function obj = Sensing(env, res, angle, lim, radius)
+            if nargin < 2
+                res = 10;
+                angle = 180;
+                lim = 5;
+                radius = 0.5;
+            end
+            
             obj.env = env;
             obj.resolution = res;
             obj.angle = angle;
             obj.limit = lim;
+            obj.radius = radius;
         end
         
         % Returns a reading from the current environment over direction
@@ -56,12 +65,49 @@ classdef Sensing
             end
         end
         
+        % Returns a reading from the current environment over direction
+        % where
+        %   x       the real x position of the robot
+        %   y       the real y position of the robot
+        %   dir     the direction of the robot
+        % It returns an array of points if we are assuming that we deal 
+        % with point obstacles in the environment. These points are within
+        % the sector of the circle defined by the maximum distance that the
+        % robot can scan and the points in the environment and the angle of
+        % scan (which we assume is 180 degrees)
+        function read = laserReadPoints(obj,x,y,dir)
+            % Use Geom2.d to do math.
+            r = obj.limit;
+            initRead = Geom2d.pointsInsideCircle(x,y,obj.env,r);
+            read = {};
+            c = cos(deg2rad(dir));
+            s = sin(deg2rad(dir));
+            p1 = [x-r*s, y+r*c];
+            p2 = [x+r*s, y-r*c];
+            hold on;
+            plot([p1(1),p2(1)],[p1(2),p2(2)]);
+            Draw.disc([x y],r,obj.angle,dir);
+            for i = 1:length(initRead)
+                p3 = [initRead{i}(1) initRead{i}(2)];
+                if Geom2d.leftOf(p1,p2,p3)
+                    read{end+1} = initRead(i);
+                    Draw.disc(p3,0.1,360,90,[0,0,0]);
+                end
+            end
+            Draw.disc([x,y],obj.radius,360,90,[0,0,0]);
+            Draw.arrow([x,y],obj.radius,dir);
+            hold off;
+        end
+        
         % Plots the lines of the laser scan
         % where
         %   x       the real x position of the robot
         %   y       the real y position of the robot
         %   dir     the direction of the robot
         %   read    the array of separations from the scan
+        % This assumes that read is an array of distances and so should not
+        % be used when we scan point polygons and return an array of points
+        % in the environment.
         function plotScan(obj,x,y,dir,read)
             obj.env.showEnv();
             count = 1;            
@@ -100,7 +146,7 @@ classdef Sensing
             res = 5;
             limit = 10;
             angle = 180;
-            s = Sensing(a,res,angle,limit);
+            s = Sensing(a,res,angle,limit,1);
             x = 8;
             y = 2;
             dir = randi([-5 5], 2,1);
@@ -112,5 +158,21 @@ classdef Sensing
             disp('Plotting the lines');
             s.plotScan(x,y,dir,read);
         end
-    end 
+        
+        function s = testPoints(filename)
+            if nargin < 1
+                filename = 'environments/env2.txt';
+            end
+            a = Environment;
+            a = a.readFile(filename);
+            s = Sensing(a);
+            a.showEnv();
+            x = 4;
+            y = 3;
+            dir = 80;
+            disp('Sensing');
+            read = s.laserReadPoints(x,y,dir);
+        end
+        
+    end
 end

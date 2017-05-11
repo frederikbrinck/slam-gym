@@ -126,6 +126,32 @@ classdef Geom2d
             end
         end
         
+        % Checks if p3 is to the left of the edge defined by points p1 and
+        % p2 where we assume that p1 and p2 are 2-dimensional vectors
+        function bool = leftOf(p1,p2,p3)
+            mat = [p1,1;p2,1;p3,1];
+            if det(mat) >= 0
+                bool = 1;
+            else 
+                bool = 0;
+            end
+        end
+        
+        % This function is useful when we have points as our obstacles in
+        % our environment. It returns points inside a circle defined by the
+        % robot position x,y and the maximum limit that the sensor can reach
+        % which is passed here as the parameter radiusScan as well as the 
+        % point polygons which are present in the environment
+        function points = pointsInsideCircle(x,y,env,radiusScan)
+            points = {};
+            pol = env.polygons;
+            for i = 1:length(pol)
+                if norm([x y]-[pol{i}(1) pol{i}(2)]) < radiusScan
+                    points{end+1} = [pol{i}(1) pol{i}(2)];
+                end
+            end
+        end
+        
         % Checks the separation between our robot and a point polygon,
         % given a particular direction and the position of the robot. If
         % the point polygon and the vector from the robot don't intersect,
@@ -152,6 +178,18 @@ classdef Geom2d
             else
                 bool = 0;
             end
+        end
+        
+        function testPoints()
+            filename = 'environments/env2.txt';
+            a = Environment;
+            a = a.readFile(filename);
+            x = 4;
+            y = 4;
+            rad = 2;
+            Geom2d.pointsInsideCircle(x,y,a,rad);
+            a.showEnv();
+            Draw.disc([x y],rad);
         end
         
         function test2()

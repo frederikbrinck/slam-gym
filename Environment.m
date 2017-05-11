@@ -95,6 +95,8 @@ classdef Environment < handle
             brown = [0.8, 0.5, 0];
             Draw.polygons(obj.polygons, brown);
             alpha(0.3);
+            xlim([0 10]);
+            ylim([0 10]);
         end
      end
 
@@ -104,7 +106,7 @@ classdef Environment < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function a = test(filename)
             if nargin < 1
-                filename = 'environments/env.txt';
+                filename = 'environments/env2.txt';
             end
             
             a = Environment;

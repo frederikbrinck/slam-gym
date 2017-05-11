@@ -25,17 +25,17 @@ classdef Robot < Odometry
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     	% Constructor for Robot
-    	function obj = Robot(x, y, theta, maxTheta, maxDist, env)
+    	function obj = Robot(x, y, theta, radius, maxTheta, maxDist, env)
     		if nargin < 4
+                radius = 0.5;
     			maxTheta = 30;
     			maxDist = 0.1;
-    		end
-
+            end
     		% Call the constructor for odometry.
-    		obj = obj@Odometry(x, y, theta, maxTheta, maxDist);
+    		obj = obj@Odometry(x, y, theta, radius, maxTheta, maxDist);
             % Create a sensing object for this robot
     		obj.sensing = Sensing(env, obj.degreesPerScan,...
-                maxTheta, obj.laserThreshold);
+                maxTheta, obj.laserThreshold, obj.radius);
             obj.dir = [cos(deg2rad(obj.theta));sin(deg2rad(obj.theta))];
     	end
 
@@ -52,7 +52,7 @@ classdef Robot < Odometry
             env = Environment;
             env = env.readFile(filename);
             env.showEnv();
-            r = Robot(2,2,90,180,10,env);
+            r = Robot(2,2,90,1,180,10,env);
             read = r.laserRead();
             r.sensing.plotScan(r.x,r.y,r.dir,read);
         end
