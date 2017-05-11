@@ -38,6 +38,13 @@ classdef Draw
             arr(3) = plot([p2(1),tailL(1)],[p2(2),tailL(2)], 'black');
         end
         
+        function segment(a, b, c)
+            if nargin < 3
+                c = [1, 1, 1];
+            end
+            plot([a(1), b(1)], [a(2), b(2)], 'color', c);
+        end
+        
         % Draw a disc with pos=[x y] of colour c and radius r onto the c
         % current figure.
         function d = disc(pos, r, angle, dir, c)
