@@ -100,14 +100,15 @@ classdef Sensing
         %   y       the real y position of the robot
         %   dir     the direction of the robot
         %   read    the array of separations from the scan
-        function plotPoints(obj,x,y,dir,read)
+        function scan = plotPoints(obj,x,y,dir,read)
             r = obj.limit;
+            scan = [];
             hold on
             % Semi circle
-            Draw.disc([x y],r,obj.angle,dir, [0.5, 0.5, 0]);            
+            scan(1) = Draw.disc([x y],r,obj.angle,dir, [0.5, 0.5, 0]);            
             for i = 1:length(read)
                 p3 = [read{i}(1) read{i}(2)];
-                Draw.disc(p3,0.1,360,90,[0,0,0]);
+                scan(end+1) = Draw.disc(p3,0.1,360,90,[0,0,0]);
             end
             hold off
         end

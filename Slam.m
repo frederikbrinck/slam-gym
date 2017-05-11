@@ -9,15 +9,54 @@ classdef (Sealed) Slam < handle
        env;
        robot;
        algorithm;
+       drawnRobot;
+       scan;
+       scanShown = false;
+       setScan = false;
    end
    methods
        function show(obj)
            obj.env.showEnv();
-           obj.robot.drawRobot();
        end
        
-       function change(obj)
-           obj.robot.x = obj.robot.x+1;
+       function deleteOldRobot(obj)
+           for i = 1:length(obj.drawnRobot)
+               delete(obj.drawnRobot(i));
+           end
+       end
+       
+       function deleteScan(obj)
+           if obj.scanShown == true
+               for i = 1:length(obj.scan)
+                   delete(obj.scan(i));
+               end
+               obj.scanShown = false;
+           end
+       end
+       
+       function showScan(obj)
+           obj.deleteScan();
+           x = obj.robot.x;
+           y = obj.robot.y;
+           dir = obj.robot.theta;
+           read = obj.robot.sensing.laserReadPoints(x,y,dir);
+           obj.scan = obj.robot.sensing.plotPoints(x,y,dir,read);
+           obj.scanShown = true;
+       end
+       
+       function showRobot(obj)
+           hold on
+           obj.drawnRobot = obj.robot.drawRobot();
+           if obj.setScan == true
+               obj.showScan();
+           end
+       end
+       
+       function change(obj, moveDir, rotateDir)
+           newPos = obj.robot.moveDemo(moveDir, rotateDir);
+           obj.robot.x = newPos(1);
+           obj.robot.y = newPos(2);
+           obj.robot.theta = newPos(3);
        end
    end
    methods (Access = private)

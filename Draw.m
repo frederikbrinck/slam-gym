@@ -27,15 +27,15 @@ classdef Draw
         end
         
         % Draw an arrow disc with p1=[x y] onto the robot
-        function [a,b,c] = arrow(p1,r,dir)
+        function arr = arrow(p1,r,dir)
             a = deg2rad(dir);
             sz = deg2rad(20);
             p2 = [p1(1)+r*cos(a);p1(2)+r*sin(a)];
             tailL = [p1(1)+r*0.7*cos(a+sz);p1(2)+r*0.7*sin(a+sz)];
             tailR = [p1(1)+r*0.7*cos(a-sz);p1(2)+r*0.7*sin(a-sz)];
-            a = plot([p1(1),p2(1)],[p1(2),p2(2)], 'black');
-            b = plot([p2(1),tailR(1)],[p2(2),tailR(2)], 'black');
-            c = plot([p2(1),tailL(1)],[p2(2),tailL(2)], 'black');
+            arr(1) = plot([p1(1),p2(1)],[p1(2),p2(2)], 'black');
+            arr(2) = plot([p2(1),tailR(1)],[p2(2),tailR(2)], 'black');
+            arr(3) = plot([p2(1),tailL(1)],[p2(2),tailL(2)], 'black');
         end
         
         % Draw a disc with pos=[x y] of colour c and radius r onto the c
