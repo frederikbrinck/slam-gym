@@ -72,8 +72,8 @@ classdef EKF < handle
                     obj.x_hat(lJ:lJ+1) = z_i.position';
                 end
                 
-                delta = [(obj.x_hat(lJ) - x_t); ...
-                    (obj.x_hat(lJ + 1) - y_t)]; 
+                delta = [(obj.x_hat(2 + 2*j) - x_t); ...
+                    (obj.x_hat(j + 1) - y_t)]; 
                 q = delta'*delta;
                 z_est = [sqrt(q); atan2d(delta(2), delta(1)) - th_t];
                 F_xj = [ eye(3); zeros(2,3)];
@@ -85,7 +85,7 @@ classdef EKF < handle
                 H = 1/q * temp * F_xj;
                 
                 K = kalmanGain(P_hat, H);
-                obj.x_hat = obj.x_hat + K*(z_i - z_est);
+                obj.x_hat.position = obj.x_hat.position + K*(z_i - z_est);
                 KH = K*H;
                 obj.p_hat = (eye(size(KH,1)) - KH)*obj.p_hat;
             end

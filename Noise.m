@@ -14,7 +14,7 @@ classdef Noise
         function Q = processNoise(deltaX, deltaY, deltaTheta, exactness)
             W = [ -deltaX; deltaY; deltaTheta ]';
             if nargin<4 
-                exactness = 0.1;
+                exactness = 0.01;
             end
             C = normrnd(0, exactness, [3 3]);
             Q = W*C*W';
