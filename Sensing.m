@@ -82,21 +82,34 @@ classdef Sensing
             read = {};
             c = cos(deg2rad(dir));
             s = sin(deg2rad(dir));
+            % ends of the semi-circle
             p1 = [x-r*s, y+r*c];
             p2 = [x+r*s, y-r*c];
-            hold on;
-            plot([p1(1),p2(1)],[p1(2),p2(2)]);
-            Draw.disc([x y],r,obj.angle,dir);
             for i = 1:length(initRead)
+                % Obstacle point
                 p3 = [initRead{i}(1) initRead{i}(2)];
                 if Geom2d.leftOf(p1,p2,p3)
-                    read{end+1} = initRead(i);
-                    Draw.disc(p3,0.1,360,90,[0,0,0]);
+                    read{end+1} = initRead{i};
                 end
             end
-            Draw.disc([x,y],obj.radius,360,90,[0,0,0]);
-            Draw.arrow([x,y],obj.radius,dir);
-            hold off;
+        end
+        
+        % Plots the points of the laser scan
+        % where
+        %   x       the real x position of the robot
+        %   y       the real y position of the robot
+        %   dir     the direction of the robot
+        %   read    the array of separations from the scan
+        function plotPoints(obj,x,y,dir,read)
+            r = obj.limit;
+            hold on
+            % Semi circle
+            Draw.disc([x y],r,obj.angle,dir);
+            for i = 1:length(read)
+                p3 = [read{i}(1) read{i}(2)];
+                Draw.disc(p3,0.1,360,90,[0,0,0]);
+            end
+            hold off
         end
         
         % Plots the lines of the laser scan
@@ -167,11 +180,12 @@ classdef Sensing
             a = a.readFile(filename);
             s = Sensing(a);
             a.showEnv();
-            x = 4;
-            y = 3;
-            dir = 80;
+            x = 7;
+            y = 6;
+            dir = -30;
             disp('Sensing');
             read = s.laserReadPoints(x,y,dir);
+            s.plotPoints(x,y,dir,read);
         end
         
     end

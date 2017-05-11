@@ -1,31 +1,48 @@
 %{
 	% Slam class.
-
+    % Is a singleton class
+    % Acts as a controller in the model-view-controller framework
     % Explanation goes here
 %}
-classdef Slam
-    properties 
-        env;                % must be initialised with environment
-    end
-    
-    methods
-        % Our constructor function setting the needed parameters
-        %   env         the environment
-        function obj = Slam(env)
-            obj.env = env;
-        end
-    end
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    methods(Static)
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        function s = test(filename)
-            if nargin < 1
-                filename = 'environments/env.txt';
-            end
-            a = Environment;
-            a = a.readFile(filename);
-            s = Slam(a);
-        end
-    end 
+classdef (Sealed) Slam < handle
+   properties
+       env;
+       robot;
+       algorithm;
+   end
+   methods
+       function show(obj)
+           obj.env.showEnv();
+           obj.robot.drawRobot();
+       end
+       
+       function change(obj)
+           obj.robot.x = obj.robot.x+1;
+       end
+   end
+   methods (Access = private)
+      function obj = Slam(filename,x, y, theta, radius, limit)
+          if nargin < 1
+              filename = 'environments/env2.txt';
+              x = 2;
+              y = 2;
+              theta = 90;
+              radius = 0.5;
+              limit = 4;
+          end
+          obj.env = Environment;
+          obj.env = obj.env.readFile(filename);
+          obj.robot = Robot(x, y, theta, radius, limit, obj.env);
+      end
+   end
+   methods (Static)
+      function singleObj = getInstance
+         persistent localObj
+         if isempty(localObj) || ~isvalid(localObj)
+             disp('new');
+             localObj = Slam();
+         end
+         singleObj = localObj;
+      end
+   end
 end
