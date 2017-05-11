@@ -5,7 +5,7 @@
 	class for Robot.
 %}
 
-classdef Odometry
+classdef Odometry < handle
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties

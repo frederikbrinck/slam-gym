@@ -11,15 +11,6 @@ classdef Algorithm < Robot
                 maxTheta, maxDist)
             obj = obj@Robot(x, y, theta, radius, limit, env,...
                 maxTheta, maxDist);
-            obj.landmarkId = 4;
-
-        end
-        
-        function [] = changeVar(obj)
-            disp('Called...');
-            obj.landmarkId = 3;
-            disp(obj.landmarkId);
-            disp(obj);
         end
         
         function lm = associateLandmark(obj, x, y)
@@ -47,13 +38,9 @@ classdef Algorithm < Robot
                
                if ~tooClose
                    lm = Landmark();
-                   disp('Creating landmarks');
-                   disp(obj.landmarkId);
-                   lm.id = obj.landmarkId;
+                   lm.id = length(obj.landmarks) + 1;
                    obj.landmarks = [obj.landmarks lm];
-                   obj.landmarkId = 6;
-                   disp('Hi Jovan');
-                   disp(obj.landmarkId);
+                   
                end
            end
         end
@@ -67,7 +54,6 @@ classdef Algorithm < Robot
             read = {};
             for i = 1:length(points)
                 p = points{i};
-                disp(obj.landmarks);
                 lm = obj.associateLandmark(p(1), p(2));
                 if isa(lm, 'Landmark')
                     hold on
@@ -87,6 +73,7 @@ classdef Algorithm < Robot
                     read{i} = [dist bearing, lm.id];
                     lm.range = dist;
                     lm.bearing = bearing;
+                    lm.position = [x y];
                 end
             end
         end
@@ -104,9 +91,6 @@ classdef Algorithm < Robot
             alg = Algorithm(1, 0, 30, 0.9, 6, env,...
                 180, 0.5);
             features = alg.getFeatures();
-            disp(alg.landmarkId);
-            alg.changeVar();
-            disp(alg);
             alg.drawRobot();
             alg.plotPoints({});
         end

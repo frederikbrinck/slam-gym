@@ -4,7 +4,7 @@
 	A class for landmark.
 %}
 
-classdef Landmark
+classdef Landmark < handle
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties
