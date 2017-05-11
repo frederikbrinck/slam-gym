@@ -45,7 +45,12 @@ classdef Robot < Odometry
         end
         
         function read = laserReadPoints(obj)
-            read = obj.sensing.laserReadPoints(obj.x,obj.y,obj.theta);
+            read = obj.sensing.laserReadPoints(obj.x, obj.y, obj.theta);
+        end
+        
+        function [] = plotPoints(obj, points)
+            pos = obj.getPosition();
+            obj.sensing.plotPoints(pos(1), pos(2), pos(3), points);
         end
         
         function out = drawRobot(obj)
@@ -74,7 +79,7 @@ classdef Robot < Odometry
             r = Robot(x,y,theta,rad,limit,env);
             r.drawRobot();
             read = r.laserReadPoints();
-            r.sensing.plotPoints(x,y,theta,read);
+            r.plotPoints(read);
         end
     end 
 end
