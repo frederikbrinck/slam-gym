@@ -63,6 +63,16 @@ classdef Odometry
     		obj.x = obj.x + dx;
     		obj.y = obj.y + dy;
     		obj.theta = obj.theta + dtheta;
-    	end
+            disp(obj.theta);
+        end
+        
+        % Move in direction dx, dy and dtheta.
+        function newPos = moveDemo(obj,moveDir,rotateDir)
+            scale = 0.2;
+            angleScale = 10;
+            newPos(1) = obj.x+moveDir*scale*cos(deg2rad(obj.theta));
+            newPos(2) = obj.y+moveDir*scale*sin(deg2rad(obj.theta));
+            newPos(3) = obj.theta+rotateDir*angleScale;
+        end
     end
 end

@@ -83,8 +83,8 @@ classdef Environment < handle
             
             % Create a new figure.
             if bool
-                figure(1);
-                clf(1);
+                % figure(1);
+                % clf(1);
                 axis square tight;
             end
             
