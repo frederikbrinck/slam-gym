@@ -54,7 +54,7 @@ classdef Robot < Odometry
             a = Draw.disc([obj.x,obj.y],obj.radius,360,90,[0,0,0]);
             arr = Draw.arrow([obj.x,obj.y],obj.radius,obj.theta);
             hold off
-            out = [arr,a];
+            out = [arr(1),arr(2),arr(3),a];
         end
     end
     
