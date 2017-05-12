@@ -57,15 +57,10 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-axes(handles.axes2);
 s = Slam.getInstance();
-s.show();
-s.showRobot();
-
-axes(handles.axes1);
-s = Slam.getInstance();
-s.show();
-s.showRobot();
+s.runSimulation();
+% s.show();
+% s.showRobot();
 
 % UIWAIT makes Gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -90,7 +85,8 @@ function forward_Callback(hObject, eventdata, handles)
 
 s = Slam.getInstance();
 s.deleteOldRobot();
-s.change(1,0);
+dir = deg2rad(s.robot.theta);
+s.change(0.2*cos(dir),0.2*sin(dir),0);
 s.showRobot();
 
 % --- Executes on button press in rotateCCW.
@@ -101,7 +97,7 @@ function rotateCCW_Callback(hObject, eventdata, handles)
 
 s = Slam.getInstance();
 s.deleteOldRobot();
-s.change(0,1);
+s.change(0,0,10);
 s.showRobot();
 
 % --- Executes on button press in rotateCW.
@@ -112,7 +108,7 @@ function rotateCW_Callback(hObject, eventdata, handles)
 
 s = Slam.getInstance();
 s.deleteOldRobot();
-s.change(0,-1);
+s.change(0,0,-10);
 s.showRobot();
 
 % --- Executes on button press in backward.
@@ -123,7 +119,8 @@ function backward_Callback(hObject, eventdata, handles)
 
 s = Slam.getInstance();
 s.deleteOldRobot();
-s.change(-1,0);
+dir = deg2rad(s.robot.theta);
+s.change(-0.2*cos(dir),-0.2*sin(dir),0);
 s.showRobot();
 
 % --- Executes on key press with focus on figure1 or any of its controls.
@@ -145,7 +142,7 @@ case 'leftarrow'
 case 'rightarrow'
     rotateCW_Callback(handles.rotateCW,[],handles);
 otherwise
-    disp('not arrow');
+    disp('not an arrow key pressed');
 end
 
 % --- Executes on button press in showScan.
