@@ -32,7 +32,7 @@ classdef Algorithm < Robot
             
             % Do the prediction
             obj.ekf.prediction(state);
-            
+             
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();
             lms = LandmarkDatabase.extractLandmarks(observations);
