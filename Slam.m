@@ -13,6 +13,7 @@ classdef (Sealed) Slam < handle
        scan;
        scanShown = false;
        setScan = false;
+       points = {};
    end
    methods
        function show(obj)
@@ -23,6 +24,11 @@ classdef (Sealed) Slam < handle
            for i = 1:length(obj.drawnRobot)
                delete(obj.drawnRobot(i));
            end
+       end
+       
+       function runSimulation(obj)
+           obj.show();
+           obj.showRobot();
        end
        
        function deleteScan(obj)
@@ -46,14 +52,20 @@ classdef (Sealed) Slam < handle
        
        function showRobot(obj)
            hold on
+           obj.points{end+1} = [obj.robot.x, obj.robot.y];
            obj.drawnRobot = obj.robot.drawRobot();
            if obj.setScan == true
                obj.showScan();
+               obj.showLines();
            end
        end
        
-       function change(obj, moveDir, rotateDir)
-           newPos = obj.robot.moveDemo(moveDir, rotateDir);
+       function showLines(obj)
+           
+       end
+       
+       function change(obj, dx, dy, dtheta)
+           newPos = obj.robot.move(dx, dy, dtheta);
            obj.robot.x = newPos(1);
            obj.robot.y = newPos(2);
            obj.robot.theta = newPos(3);
@@ -71,6 +83,7 @@ classdef (Sealed) Slam < handle
           end
           obj.env = Environment;
           obj.env = obj.env.readFile(filename);
+          obj.points{1} = [x,y];
           obj.robot = Robot(x, y, theta, radius, limit, obj.env);
       end
    end
@@ -82,6 +95,10 @@ classdef (Sealed) Slam < handle
              localObj = Slam();
          end
          singleObj = localObj;
+      end
+      
+      function test
+          Gui;
       end
    end
 end
