@@ -48,7 +48,7 @@ classdef Odometry < handle
     	end
 
     	% Move in direction dx, dy and dtheta.
-    	function move(obj, dx, dy, dtheta)
+    	function newPos = move(obj, dx, dy, dtheta)
     		% Make sure our robot moves reasonably.
     		if dx > obj.maxDist
     			dx = obj.maxDist;
@@ -63,16 +63,7 @@ classdef Odometry < handle
     		obj.x = obj.x + dx;
     		obj.y = obj.y + dy;
     		obj.theta = obj.theta + dtheta;
-            disp(obj.theta);
-        end
-        
-        % Move in direction dx, dy and dtheta.
-        function newPos = moveDemo(obj,moveDir,rotateDir)
-            scale = 0.2;
-            angleScale = 10;
-            newPos(1) = obj.x+moveDir*scale*cos(deg2rad(obj.theta));
-            newPos(2) = obj.y+moveDir*scale*sin(deg2rad(obj.theta));
-            newPos(3) = obj.theta+rotateDir*angleScale;
+            newPos = [obj.x, obj.y, obj.theta];
         end
     end
 end
