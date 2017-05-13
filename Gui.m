@@ -227,7 +227,6 @@ function start_Callback(hObject, eventdata, handles)
 s = Slam.getInstance();
 if get(hObject,'Value') == true
     set(hObject,'String','Quit');
-    s.startFlag = true;
     set(handles.envMenu,'enable','off');
     set(handles.algMenu,'enable','off');
     set(handles.hideScan,'enable','on');
@@ -235,21 +234,21 @@ if get(hObject,'Value') == true
     set(handles.showScan, 'Value', 0);
     set(handles.hideScan, 'Value', 1);
     cla;
+    s.startFlag = true;
     s.startSimulation();
     s.runSimulation();
 else
     set(hObject,'String','Start');
-    s.startFlag = false;
     set(handles.envMenu,'enable','on');
     set(handles.algMenu,'enable','on');
     set(handles.hideScan,'enable','off');
     set(handles.showScan,'enable','off');
     set(handles.showScan, 'Value', 0);
     set(handles.hideScan, 'Value', 1);
-    cla;
+    s.startFlag = false;
     s.stopSimulation();
+    cla;
 end
-
 
 % --- Executes on selection change in algMenu.
 function algMenu_Callback(hObject, eventdata, handles)

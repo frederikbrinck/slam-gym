@@ -38,14 +38,22 @@ classdef (Sealed) Slam < handle
                obj.points = {};
                obj.setScan = false;
                obj.scanShown = false;
+               obj.robot.x = 2;
+               obj.robot.y = 2;
            end
        end
        
        function runSimulation(obj)
-           if obj.startFlag == true
+           while obj.startFlag == true
+               pause(0.1);
                obj.deleteOldRobot();
+               
+               % BASIC MOTION PLAN. ODOMETRY AND MOTION WILL GO BELOW
+               obj.change(0.1,0.1,10);
+               
                obj.showRobot();
            end
+           obj.deleteOldRobot();
        end
        
        function deleteScan(obj)
