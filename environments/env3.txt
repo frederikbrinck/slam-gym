@@ -1,4 +1,4 @@
-%file: env2.txt
+%file: env3.txt
 %
 %   Note that comments denoted with % are ignored.
 %   
@@ -19,26 +19,20 @@
 PX: 0 0 10 10 		
 PY: 0 10 10 0	
 
+% Triangle
+PX: 5 5 2
+PY: 1 5 5
+
+% Rectangle
+PX: 7 8 8 7
+PY: 3.5 3.5 10 10
+
+% Polygon behind
+PX: 0.5 0.2 6
+PY: 9.5 4.5 9
+
 % Point
-PX: 6
-PY: 6
-
-PX: 6
-PY: 7
-
-PX: 6
-PY: 8
-
-PX: 6
-PY: 9
-
 PX: 5
-PY: 9
-
-PX: 7
-PY: 9
-
-PX: 8
-PY: 9
+PY: 8
 
 % End

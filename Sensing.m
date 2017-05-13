@@ -9,7 +9,7 @@
     
     % This output can be plotted using the plotScan() function.
 %}
-classdef Sensing
+classdef Sensing < handle
     properties
         env;                % must be initialised with environment
         resolution = 1;     % resolution of readings

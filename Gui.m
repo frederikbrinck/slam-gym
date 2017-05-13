@@ -22,7 +22,7 @@ function varargout = Gui(varargin)
 
 % Edit the above text to modify the response to help Gui
 
-% Last Modified by GUIDE v2.5 11-May-2017 14:18:07
+% Last Modified by GUIDE v2.5 12-May-2017 19:40:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,10 +57,6 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
-s = Slam.getInstance();
-s.runSimulation();
-% s.show();
-% s.showRobot();
 
 % UIWAIT makes Gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -171,4 +167,108 @@ set(handles.showScan, 'Value', 0);
 if get(hObject,'Value') == 1
     s.setScan = false;
     s.deleteScan();
+end
+
+% --- Executes on button press in groundTruth.
+function groundTruth_Callback(hObject, eventdata, handles)
+% hObject    handle to groundTruth (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of groundTruth
+
+
+% --- Executes on button press in estimatedMap.
+function estimatedMap_Callback(hObject, eventdata, handles)
+% hObject    handle to estimatedMap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of estimatedMap
+
+
+% --- Executes on selection change in envMenu.
+function envMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to envMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns envMenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from envMenu
+contents = cellstr(get(hObject,'String'));
+s = Slam.getInstance();
+if s.startFlag == false
+    file = strcat('environments/',contents{get(hObject,'Value')});
+    a = Environment;
+    a = a.readFile(file);
+    s.env = a;
+    s.robot.sensing.env = a;
+end
+
+% --- Executes during object creation, after setting all properties.
+function envMenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to envMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on button press in start.
+function start_Callback(hObject, eventdata, handles)
+% hObject    handle to start (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of start
+s = Slam.getInstance();
+if get(hObject,'Value') == true
+    set(hObject,'String','Quit');
+    s.startFlag = true;
+    set(handles.envMenu,'enable','off');
+    set(handles.algMenu,'enable','off');
+    set(handles.hideScan,'enable','on');
+    set(handles.showScan,'enable','on');
+    set(handles.showScan, 'Value', 0);
+    set(handles.hideScan, 'Value', 1);
+    cla;
+    s.startSimulation();
+    s.runSimulation();
+else
+    set(hObject,'String','Start');
+    s.startFlag = false;
+    set(handles.envMenu,'enable','on');
+    set(handles.algMenu,'enable','on');
+    set(handles.hideScan,'enable','off');
+    set(handles.showScan,'enable','off');
+    set(handles.showScan, 'Value', 0);
+    set(handles.hideScan, 'Value', 1);
+    cla;
+    s.stopSimulation();
+end
+
+
+% --- Executes on selection change in algMenu.
+function algMenu_Callback(hObject, eventdata, handles)
+% hObject    handle to algMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns algMenu contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from algMenu
+
+
+% --- Executes during object creation, after setting all properties.
+function algMenu_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to algMenu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

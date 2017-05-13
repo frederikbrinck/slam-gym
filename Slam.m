@@ -14,6 +14,7 @@ classdef (Sealed) Slam < handle
        scanShown = false;
        setScan = false;
        points = {};
+       startFlag = false;
    end
    methods
        function show(obj)
@@ -26,9 +27,25 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       function startSimulation(obj)
+           if obj.startFlag == true
+               obj.show();
+           end
+       end
+       
+       function stopSimulation(obj)
+           if obj.startFlag == false
+               obj.points = {};
+               obj.setScan = false;
+               obj.scanShown = false;
+           end
+       end
+       
        function runSimulation(obj)
-           obj.show();
-           obj.showRobot();
+           if obj.startFlag == true
+               obj.deleteOldRobot();
+               obj.showRobot();
+           end
        end
        
        function deleteScan(obj)
@@ -56,25 +73,23 @@ classdef (Sealed) Slam < handle
            obj.drawnRobot = obj.robot.drawRobot();
            if obj.setScan == true
                obj.showScan();
-               obj.showLines();
            end
-       end
-       
-       function showLines(obj)
-           
+           hold off
        end
        
        function change(obj, dx, dy, dtheta)
-           newPos = obj.robot.move(dx, dy, dtheta);
-           obj.robot.x = newPos(1);
-           obj.robot.y = newPos(2);
-           obj.robot.theta = newPos(3);
+           if obj.startFlag == true
+               newPos = obj.robot.move(dx, dy, dtheta);
+               obj.robot.x = newPos(1);
+               obj.robot.y = newPos(2);
+               obj.robot.theta = newPos(3);
+           end
        end
    end
    methods (Access = private)
       function obj = Slam(filename,x, y, theta, radius, limit)
           if nargin < 1
-              filename = 'environments/env2.txt';
+              filename = 'environments/env1.txt';
               x = 2;
               y = 2;
               theta = 90;
@@ -83,12 +98,13 @@ classdef (Sealed) Slam < handle
           end
           obj.env = Environment;
           obj.env = obj.env.readFile(filename);
+          obj.points = {};
           obj.points{1} = [x,y];
           obj.robot = Robot(x, y, theta, radius, limit, obj.env);
       end
    end
    methods (Static)
-      function singleObj = getInstance
+      function singleObj = getInstance()
          persistent localObj
          if isempty(localObj) || ~isvalid(localObj)
              disp('new');
