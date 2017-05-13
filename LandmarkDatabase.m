@@ -18,11 +18,19 @@ classdef LandmarkDatabase < handle
            end
         end
 
-        function extractLandmarks(obj, observations)
+        function lms = extractLandmarks(obj, observations)
            % Apply obj.associateLandmark to all observations.
+           lms = [];
            for i = 1:length(observations)
-               obj.associateLandmark(observations(i,1),observations(i,2));
+               lm = obj.associateLandmark(observations(i,1),observations(i,2));
+               if isa(lm, 'Landmark')
+                   lms = [lms lm];
+               end
            end
+        end
+        
+        function lms = extractNewLandmarks(obj)
+           lms = obj.newLandmarks;
         end
         
         function lm = associateLandmark(obj, x, y)
@@ -57,9 +65,11 @@ classdef LandmarkDatabase < handle
                end
 
                if tooClose 
-                   for j = i+1:length(obj.landmarks)
-                       obj.landmarks(j).id = obj.landmarks(j).id - 1;
-                   end 
+                   % Don't update landmark ids, due to EKF
+                   % filter
+                   %for j = i+1:length(obj.landmarks)
+                   %    obj.landmarks(j).id = obj.landmarks(j).id - 1;
+                   %end 
                    obj.landmarks(i) = [];
                end
                
@@ -67,20 +77,21 @@ classdef LandmarkDatabase < handle
                    lm = Landmark();
                    lm.position = [x y];
 
-                   if isempty(obj.newLandmarks)
+                   % Don't give dynamic ids due to EKF
+                   %if isempty(obj.newLandmarks)
                        lm.id = length(obj.landmarks) + 1;
-                   else
-                       lm.id = obj.newLandmarks(length(obj.newLandmarks)).id + 1;
-                   end
+                   %else
+                   %    lm.id = obj.newLandmarks(length(obj.newLandmarks)).id + 1;
+                   %end
 
                    obj.newLandmarks = [obj.newLandmarks lm];
-                   
                end
            end
         end
 
-        function addNewLandmarks(obj)
+        function lms = addNewLandmarks(obj)
            % Add new landmarks to our database and set it to be empty.
+           lms = obj.newLandmarks;
            obj.landmarks = [obj.landmarks obj.newLandmarks];
            obj.newLandmarks = [];
         end

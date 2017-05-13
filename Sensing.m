@@ -78,18 +78,18 @@ classdef Sensing < handle
         function read = laserReadPoints(obj,x,y,dir)
             % Use Geom2.d to do math.
             r = obj.limit;
-            initRead = Geom2d.pointsInsideCircle(x,y,obj.env,r);
-            read = {};
-            c = cos(deg2rad(dir));
-            s = sin(deg2rad(dir));
-            % ends of the semi-circle
+            circleRead = Geom2d.pointsInsideCircle(x,y,obj.env,r);
+            read = [];
+            c = cosd(dir);
+            s = sind(dir);
+            % Ends of the semi-circle
             p1 = [x-r*s, y+r*c];
             p2 = [x+r*s, y-r*c];
-            for i = 1:length(initRead)
+            for i = 1:length(circleRead)
                 % Obstacle point
-                p3 = [initRead{i}(1) initRead{i}(2)];
+                p3 = [circleRead(i,1) circleRead(i,2)];
                 if Geom2d.leftOf(p1,p2,p3)
-                    read{end+1} = initRead{i};
+                    read(end+1) = circleRead(i);
                 end
             end
         end

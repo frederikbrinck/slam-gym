@@ -1,83 +1,60 @@
+%{
+  Created by Mufei Li on 2017/05/04.
+  Modified by Frederik Jensen 2017/05/12
+
+  
+%}
+
 classdef Algorithm < Robot
     properties
         landmarks;
         landmarkId = 1;
         maxAssociateError = 0.1
         maxLandmarkError = 0.2;
+        ekf;
     end
     
     methods
-        function obj = Algorithm(x, y, theta, radius, limit, env,...
-                maxTheta, maxDist)
-            obj = obj@Robot(x, y, theta, radius, limit, env,...
-                maxTheta, maxDist);
+        % Constructor of the algorithm class which instantiates the
+        % super class robot, and runs the EKF filter.
+        function obj = Algorithm(x, y, theta, radius, limit, env, maxTheta, maxDist)
+            obj = obj@Robot(x, y, theta, radius, limit, env, maxTheta, maxDist);
+
+            obj.ekf = EKF([x y theta]', 0.1, 0.1);
         end
         
-        function lm = associateLandmark(obj, x, y)
-           % Associate landmark
-           lm = false;
-           for i = 1:length(obj.landmarks)
-               cLm = obj.landmarks(i);
-               if norm([x y] - cLm.position) < obj.maxAssociateError
-                   lm = cLm;
-                   break;
-               end
-           end
-           
-           % Add landmark to database if it isn't to close to another
-           % landmark
-           if ~isa(lm, 'Landmark')
-               tooClose = false;
-               for i = 1:length(obj.landmarks)
-                   cLm = obj.landmarks(i);
-                   if norm([x y] - cLm.position) < obj.maxLandmarkError
-                       tooClose = true;
-                       break;
-                   end
-               end
-               
-               if ~tooClose
-                   lm = Landmark();
-                   lm.id = length(obj.landmarks) + 1;
-                   obj.landmarks = [obj.landmarks lm];
-                   
-               end
-           end
-        end
-        
-        function read = getFeatures(obj)
-            conf = obj.getPosition();
-            x = conf(1);
-            y = conf(2);
-            theta = conf(3);
-            points = obj.laserReadPoints();
-            read = {};
-            for i = 1:length(points)
-                p = points{i};
-                lm = obj.associateLandmark(p(1), p(2));
-                if isa(lm, 'Landmark')
-                    hold on
-                    robToPoint = p - [x y];
-                    dist = norm(robToPoint);
-                    Draw.segment(p, [x y], [1, 0, 0]);
-
-                    dir = [cosd(theta) sind(theta) 0];
-                    p3 = [robToPoint 0];
-                    bearing = atan2d(norm(cross(p3,dir)),dot(p3,dir));
-                    %bearing = rad2deg(acos(dot(robToPoint, [x y]) / (norm(robToPoint) * norm([x y]))));
-
-                    Draw.arrow([x,y],dist,bearing + theta);
-                    hold off
-                    % See if this point already exists and set
-                    % i accordingly
-                    read{i} = [dist bearing, lm.id];
-                    lm.range = dist;
-                    lm.bearing = bearing;
-                    lm.position = [x y];
-                end
+        % The main loop run by the Slam.m algorithm.
+        function bool = simulate(obj)         
+            bool = false;
+            % Get robot position and move it
+            state = obj.ekf.state();
+            state = obj.moveNoisy(state, [dx dy theta]);
+            
+            % Do the prediction
+            obj.ekf.prediction(state);
+            
+            % Perform laser scan and loop over all observed landmarks
+            observations = obj.laserReadPoints();
+            lms = LandmarkDatabase.extractLandmarks(observations);
+            for i = 1:length(lms)
+                % Correct the estimates based on the current landmark.
+                lm = lms(i);
+                [range, bearing] = obj.computeBearing(lm.position);
+                lm.range = range;
+                lm.bearing = bearing;
+                obj.ekf.correction(lms(i)); 
+            end
+            
+            % Extract all new landmarks
+            nlms = LandmarkDatabase.addNewLandmarks();
+            for i = 1:length(nlms)
+               % Get landmark and add it to ekf. 
+               lm = nlms(i);
+               obj.ekf.addLandmark(lm);
             end
         end
     end
+   
     
     methods(Static)
         function s = test(filename)
@@ -90,9 +67,7 @@ classdef Algorithm < Robot
             
             alg = Algorithm(1, 0, 30, 0.9, 6, env,...
                 180, 0.5);
-            features = alg.getFeatures();
-            alg.drawRobot();
-            alg.plotPoints({});
+            alg.simulate();
         end
     end
 end

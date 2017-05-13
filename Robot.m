@@ -6,7 +6,6 @@
 %}
 
 classdef Robot < Odometry
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     properties
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,7 +13,6 @@ classdef Robot < Odometry
     	% cannot tell the exact length for a specific angle or if the 
     	% length is bigger than the threshold, the laser scanner will 
     	% simply return the threshold as the range for the angle.
-    	laserThreshold = 3;
     	degreesPerScan = 5; % This is in terms of degrees, not radians.
         sensing;
         dir;
@@ -23,20 +21,22 @@ classdef Robot < Odometry
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    	% Constructor for Robot
-    	function obj = Robot(x, y, theta, radius, limit, env,...
-                maxTheta, maxDist)
+    	% The Robot must be instantiated with certain parameters:
+        %   x =         x position
+        %   y =         y position
+        %   theta =     start theta with respect to the x-axis
+        %   radius =    robot radius
+        %   limit
+    	function obj = Robot(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorEnv, sensorAngle, sensorThreshold)
             if nargin < 7
     			maxTheta = 180;
     			maxDist = 0.1;
             end
+            
     		% Call the constructor for odometry.
-    		obj = obj@Odometry(x, y, theta, radius, maxTheta, maxDist);
+    		obj = obj@Odometry(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed);
             % Create a sensing object for this robot
-            obj.laserThreshold = limit;
-    		obj.sensing = Sensing(env, obj.degreesPerScan,...
-                maxTheta, obj.laserThreshold, obj.radius);
+    		obj.sensing = Sensing(sensorEnv, obj.degreesPerScan, sensorAngle, sensorThreshold, obj.radius);
             obj.dir = [cos(deg2rad(obj.theta));sin(deg2rad(obj.theta))];
     	end
 
@@ -46,6 +46,15 @@ classdef Robot < Odometry
         
         function read = laserReadPoints(obj)
             read = obj.sensing.laserReadPoints(obj.x, obj.y, obj.theta);
+        end
+        
+        function [range, bearing] = computeBearing(obj, position)
+            [x, y, theta] = obj.getPosition();
+            u = [cosd(theta) sind(theta) 0];
+            v = [(position - [x y]) 0];
+            
+            range = norm(v);
+            bearing = atan2d(norm(cross(v, u)),dot(v, u));
         end
         
         function [] = plotPoints(obj, points)

@@ -11,6 +11,15 @@ classdef Noise
     end
     
     methods(Static=true)
+        % Returns a random variable of noise drawn according to the normal
+        % distribution. 
+        function n = gaussian(r, c, strength)
+            if nargin < 3
+               strength = 0.5; 
+            end
+            n = randn(r, c) * strength; 
+        end
+        
         function Q = processNoise(deltaX, deltaY, deltaTheta, exactness)
             W = [ -deltaX; deltaY; deltaTheta ]';
             if nargin<4 

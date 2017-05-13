@@ -142,12 +142,12 @@ classdef Geom2d
         % robot position x,y and the maximum limit that the sensor can reach
         % which is passed here as the parameter radiusScan as well as the 
         % point polygons which are present in the environment
-        function points = pointsInsideCircle(x,y,env,radiusScan)
-            points = {};
+        function points = pointsInsideCircle(x, y, env, radiusScan)
+            points = [];
             pol = env.polygons;
             for i = 1:length(pol)
                 if norm([x y]-[pol{i}(1) pol{i}(2)]) < radiusScan
-                    points{end+1} = [pol{i}(1) pol{i}(2)];
+                    points(end+1) = [pol{i}(1) pol{i}(2)];
                 end
             end
         end
