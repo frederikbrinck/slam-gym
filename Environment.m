@@ -6,9 +6,11 @@
 
 classdef Environment < handle
      properties
-        boundX = [];
-        boundY = [];
-        polygons = {}
+         start = [];
+         goal = [];
+         boundX = [];
+         boundY = [];
+         polygons = {}
     end
 
 
@@ -34,15 +36,27 @@ classdef Environment < handle
                     c = sscanf(str, '%f', size(str,2)); % Look for object.
                     switch itr
                         case 1
-                            obj.boundX = c;
+                            obj.start(1) = c;
                             itr = itr + 1;
                         case 2
-                            obj.boundY = c;
+                            obj.start(2) = c;
                             itr = itr + 1;
                         case 3
-                            polyX = c;
+                            obj.goal(1) = c;
                             itr = itr + 1;
                         case 4
+                            obj.goal(2) = c;
+                            itr = itr + 1;
+                        case 5
+                            obj.boundX = c;
+                            itr = itr + 1;
+                        case 6
+                            obj.boundY = c;
+                            itr = itr + 1;
+                        case 7
+                            polyX = c;
+                            itr = itr + 1;
+                        case 8
                             obj.polygons{end + 1} = [polyX c]';
                             % Loop back to collect next elements
                             itr = itr - 1;
@@ -106,7 +120,7 @@ classdef Environment < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function a = test(filename)
             if nargin < 1
-                filename = 'environments/env2.txt';
+                filename = 'environments/env1.txt';
             end
             
             a = Environment;
