@@ -17,36 +17,14 @@
 
 % Start
 PX: 5
-PY: 2
+PY: 5
 
 % Goal
-PX: 9
-PY: 6
+PX: 7
+PY: 1
 
 % Bounding Box:
 PX: 0 0 10 10 		
 PY: 0 10 10 0	
-
-% Point
-PX: 6
-PY: 6
-
-PX: 6
-PY: 7
-
-PX: 6
-PY: 8
-
-PX: 6
-PY: 9
-
-PX: 5
-PY: 9
-
-PX: 7
-PY: 9
-
-PX: 8
-PY: 9
 
 % End

@@ -85,9 +85,7 @@ classdef Odometry < handle
         % the update and noise. Finally, return the noisy position.
         %   controls =  3d vector with x, y and theta
         %   update   =  3d vector with dx, dy, and theta
-        function noisyUpdate = moveNoisy(obj, state, s, t)
-            obj.move(s * cosd(t + obj.theta), s * sind(t + obj.theta), t);
-            
+        function noisyUpdate = moveNoisy(obj, state, s, t)            
             % Check for movement constraints before update and
             % returning the noisy position.
             if s > obj.maxDist
@@ -100,6 +98,8 @@ classdef Odometry < handle
                 t = -obj.maxTheta;
             end
             
+            obj.move(s * cosd(t + obj.theta), s * sind(t + obj.theta), t);
+
             % Get noise and return position with noise accordingly.
             noise = Noise.gaussian(1, 3, 0.01);
             noise(3) = Noise.gaussian(1,1,1);

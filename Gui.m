@@ -103,6 +103,11 @@ function showScan_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of showScan
 
 s = Slam.getInstance();
+if get(hObject,'Value') == 0
+    set(handles.hideScan, 'Value', 1);
+    hideScan_Callback(handles.hideScan, [], handles); 
+    return;
+end
 set(handles.hideScan, 'Value', 0);
 if get(hObject,'Value') == 1
     s.setScan = true;
@@ -117,6 +122,11 @@ function hideScan_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of hideScan
 
 s = Slam.getInstance();
+if get(hObject,'Value') == 0
+    set(handles.showScan, 'Value', 1);
+    showScan_Callback(handles.showScan, [], handles); 
+    return;
+end
 set(handles.showScan, 'Value', 0);
 if get(hObject,'Value') == 1
     s.setScan = false;

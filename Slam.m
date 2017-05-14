@@ -36,6 +36,7 @@ classdef (Sealed) Slam < handle
        function startSimulation(obj)
            if obj.startFlag == true
                obj.show();
+               obj.robot = Algorithm(obj.env);
            end
        end
        
@@ -44,8 +45,6 @@ classdef (Sealed) Slam < handle
                obj.points = {};
                obj.setScan = false;
                obj.scanShown = false;
-               obj.robot.x = 2;
-               obj.robot.y = 2;
            end
        end
        
@@ -66,15 +65,44 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       function [s, theta] = plannedMotion(obj) 
+           s = 0.1;          
+           [x, y, t] = obj.robot.getPosition();
+           position = obj.env.goal - [x y]; 
+           position = position/norm(position);
+           u = [1 0 0]; 
+           v = [position 0];
+           
+           bearing = atan2d(norm(cross(v, u)),dot(v, u));
+           a = cross(v,u);
+           if a(3) > 0;
+               bearing = 360 - bearing;
+           end
+           theta = bearing - t;
+       end
+       
+       function bool = checkCondition(obj)
+           [x, y, ~] = obj.robot.getPosition();
+           if norm([x y] - obj.env.goal) < 1
+               bool = true;
+           else
+               bool = false;
+           end
+       end
+       
        function runSimulation(obj)
            while obj.startFlag == true
                obj.deleteOldRobot();
-               [s, t] = obj.getSpeedAndRotation();
+               % [s, t] = obj.getSpeedAndRotation();
+               [s, t] = obj.plannedMotion();
                obj.robot.simulate(s, t);
                
-               % BASIC MOTION PLAN. ODOMETRY AND MOTION WILL GO BELOW
-               %obj.change(0.1,0.1,10);
+               if obj.checkCondition() == true
+                   break;
+               end
                
+               % BASIC MOTION PLAN. ODOMETRY AND MOTION WILL GO BELOW
+               % obj.change(0.1,0.1,10);
                obj.showRobot();
                landmarks = obj.robot.getLandmarkPositions();
                hold on
@@ -147,23 +175,25 @@ classdef (Sealed) Slam < handle
        end
    end
    methods (Access = private)
-      function obj = Slam(filename, x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorEnv, sensorAngle, sensorThreshold)
+      function obj = Slam(filename, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold)
           if nargin < 1
               filename = 'environments/env1.txt';
-              x = 6;
-              y = 2;
               theta = 45;
               radius = 0.5;
               odometryMaxTheta = 4;
               odometryMaxSpeed = 4;
               sensorAngle = 180;
               sensorThreshold = 2;
+              sensorEnv = Environment;
           end
-          obj.env = Environment;
-          obj.env = obj.env.readFile(filename);
+          sensorEnv = sensorEnv.readFile(filename);
+          obj.env = sensorEnv;
+          x = obj.env.start(1);
+          y = obj.env.start(2);
           obj.points = {};
+          obj.env = sensorEnv;
           obj.points{1} = [x,y];
-          obj.robot = Algorithm(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, obj.env, sensorAngle, sensorThreshold);
+          obj.robot = Algorithm(obj.env, x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold);
       end
    end
    methods (Static)
