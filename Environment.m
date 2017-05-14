@@ -108,6 +108,7 @@ classdef Environment < handle
             % Display obstacles in brown.
             brown = [0.8, 0.5, 0];
             Draw.polygons(obj.polygons, brown);
+            Draw.disc(obj.goal, 0.5, 360, 90, [0,0,1]);
             alpha(0.3);
             xlim([0 10]);
             ylim([0 10]);
