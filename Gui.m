@@ -22,7 +22,7 @@ function varargout = Gui(varargin)
 
 % Edit the above text to modify the response to help Gui
 
-% Last Modified by GUIDE v2.5 12-May-2017 19:40:57
+% Last Modified by GUIDE v2.5 13-May-2017 13:31:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,73 +73,27 @@ function varargout = Gui_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on button press in forward.
-function forward_Callback(hObject, eventdata, handles)
-% hObject    handle to forward (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-s = Slam.getInstance();
-s.deleteOldRobot();
-dir = deg2rad(s.robot.theta);
-s.change(0.2*cos(dir),0.2*sin(dir),0);
-s.showRobot();
-
-% --- Executes on button press in rotateCCW.
-function rotateCCW_Callback(hObject, eventdata, handles)
-% hObject    handle to rotateCCW (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-s = Slam.getInstance();
-s.deleteOldRobot();
-s.change(0,0,10);
-s.showRobot();
-
-% --- Executes on button press in rotateCW.
-function rotateCW_Callback(hObject, eventdata, handles)
-% hObject    handle to rotateCW (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-s = Slam.getInstance();
-s.deleteOldRobot();
-s.change(0,0,-10);
-s.showRobot();
-
-% --- Executes on button press in backward.
-function backward_Callback(hObject, eventdata, handles)
-% hObject    handle to backward (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-s = Slam.getInstance();
-s.deleteOldRobot();
-dir = deg2rad(s.robot.theta);
-s.change(-0.2*cos(dir),-0.2*sin(dir),0);
-s.showRobot();
-
 % --- Executes on key press with focus on figure1 or any of its controls.
 function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-keyPressed = eventdata.Key;
-switch keyPressed
-case 'uparrow'
-    forward_Callback(handles.forward,[],handles);
-case 'downarrow'
-    backward_Callback(handles.backward,[],handles);
-case 'leftarrow'
-    rotateCCW_Callback(handles.rotateCCW,[],handles);
-case 'rightarrow'
-    rotateCW_Callback(handles.rotateCW,[],handles);
-otherwise
-    disp('not an arrow key pressed');
-end
+    s = Slam.getInstance();
+    % hObject    handle to figure1 (see GCBO)
+    % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+    %	Key: name of the key that was pressed, in lower case
+    %	Character: character interpretation of the key(s) that was pressed
+    %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+    % handles    structure with handles and user data (see GUIDATA)
+    keyPressed = eventdata.Key;
+    switch keyPressed
+        case 'uparrow'
+            s.up = true;
+        case 'downarrow'
+            s.down = true;
+        case 'leftarrow'
+            s.left = true;
+        case 'rightarrow'
+            s.right = true;
+    end
+    
 
 % --- Executes on button press in showScan.
 function showScan_Callback(hObject, eventdata, handles)
@@ -271,3 +225,39 @@ function algMenu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key release with focus on figure1 and none of its controls.
+function figure1_KeyReleaseFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was released, in lower case
+%	Character: character interpretation of the key(s) that was released
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) released
+% handles    structure with handles and user data (see GUIDATA)
+
+s = Slam.getInstance();
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+keyPressed = eventdata.Key;
+switch keyPressed
+    case 'uparrow'
+        s.up = false;
+    case 'downarrow'
+        s.down = false;
+    case 'leftarrow'
+        s.left = false;
+    case 'rightarrow'
+        s.right = false;
+end
+
+
+% --- Executes on button press in pushbutton6.
+function pushbutton6_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton6 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

@@ -1,8 +1,8 @@
 classdef LandmarkDatabase < handle
     properties
         landmarks = [];
-        maxAssociateError = 0.1
-        maxLandmarkError = 0.2;
+        maxAssociateError = 0.5;
+        maxLandmarkError = 0.8;
 
         % New landmarks do not need to get updated through EKF. Keep
         % them separate and add them to our landmark database obj.landmarks
@@ -21,7 +21,7 @@ classdef LandmarkDatabase < handle
         function lms = extractLandmarks(obj, observations)
            % Apply obj.associateLandmark to all observations.
            lms = [];
-           for i = 1:length(observations)
+           for i = 1:size(observations,1)
                lm = obj.associateLandmark(observations(i,1),observations(i,2));
                if isa(lm, 'Landmark')
                    lms = [lms lm];
@@ -44,8 +44,12 @@ classdef LandmarkDatabase < handle
            %    added to the landmark database after EKF update.
 
            lm = false;
+           %disp('Cheking landmark for pos')
+           %disp([x y])
+           %disp('---')
            for i = 1:length(obj.landmarks)
                cLm = obj.landmarks(i);
+               %disp(norm([x y] - cLm.position))
                if norm([x y] - cLm.position) < obj.maxAssociateError
                    lm = cLm;
                    break;
@@ -83,8 +87,10 @@ classdef LandmarkDatabase < handle
                    %else
                    %    lm.id = obj.newLandmarks(length(obj.newLandmarks)).id + 1;
                    %end
-
                    obj.newLandmarks = [obj.newLandmarks lm];
+                   
+                   % Make return object empty
+                   lm = [];
                end
            end
         end

@@ -85,11 +85,11 @@ classdef Sensing < handle
             % Ends of the semi-circle
             p1 = [x-r*s, y+r*c];
             p2 = [x+r*s, y-r*c];
-            for i = 1:length(circleRead)
+            for i = 1:size(circleRead,1)
                 % Obstacle point
                 p3 = [circleRead(i,1) circleRead(i,2)];
                 if Geom2d.leftOf(p1,p2,p3)
-                    read(end+1) = circleRead(i);
+                    read = [read; circleRead(i,:)];
                 end
             end
         end
@@ -105,9 +105,9 @@ classdef Sensing < handle
             scan = [];
             hold on
             % Semi circle
-            scan(1) = Draw.disc([x y],r,obj.angle,dir, [0.5, 0.5, 0]);            
-            for i = 1:length(read)
-                p3 = [read{i}(1) read{i}(2)];
+            scan(1) = Draw.disc([x y],r,obj.angle,dir, [0.5, 0.5, 0]);   
+            for i = 1:size(read, 1)
+                p3 = [read(i,1) read(i,2)];
                 scan(end+1) = Draw.disc(p3,0.1,360,90,[0,0,0]);
             end
             hold off

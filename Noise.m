@@ -31,7 +31,6 @@ classdef Noise
         
         % assumes the angle measurement has a constant error in degrees.
         function measNoise = measurementNoise(range, rangeVar, bearingError)
-            V = eye(3);
             if nargin < 3
                 bearingError = 1;
             end
@@ -41,10 +40,10 @@ classdef Noise
             if nargin < 1
                 range = 5;
             end
-            C = normrnd(0, sqrt(rangeVar), [1 2]);
+            C = normrnd(0, sqrt(rangeVar));
             
-            R = [[range*C 0]; [0 bearingError]];
-            measNoise = V*R*V';
+            measNoise = [[range*C 0]; [0 bearingError]];
+            
         end
     end
     

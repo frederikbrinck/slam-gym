@@ -147,7 +147,7 @@ classdef Geom2d
             pol = env.polygons;
             for i = 1:length(pol)
                 if norm([x y]-[pol{i}(1) pol{i}(2)]) < radiusScan
-                    points(end+1) = [pol{i}(1) pol{i}(2)];
+                    points = [points; [pol{i}(1) pol{i}(2)]];
                 end
             end
         end
