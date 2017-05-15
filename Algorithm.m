@@ -66,7 +66,7 @@ classdef Algorithm < Robot
             [x, y, theta] = obj.ekf.state();
             [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1 ; 0.05]);
             % Do the prediction
-            obj.ekf.predict(signal, noise);
+            obj.ekf.predict(signal', noise');
             
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();
@@ -79,12 +79,13 @@ classdef Algorithm < Robot
                  % Correct the estimates based on the current landmark.
                  j = 2 + 2*i;
                  if j < size(obj.ekf.x, 1)
-                    obj.ekf.correct(i, rbT', observations(i,:)'); 
+                    obj.ekf.correct(i, rbT(i,:)', observations(i,:)'); 
                  end
             end            
             
             % Extract all new landmarks
-            for i = 1:size(rbT, 2):2
+            disp(size(rbT,1));
+            for i = 1:size(rbT, 1)
                 j = 2 + 2*i;
                 if j >= size(obj.ekf.x, 1)
                     % Get landmark and add it to ekf. 
