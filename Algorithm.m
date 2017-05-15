@@ -46,11 +46,12 @@ classdef Algorithm < Robot
                 t = 0;
             end
             bool = false;
-            % Get robot position and move it
-            state = obj.ekf.state();
-            controls = obj.moveNoisy(state, s, t);
+            % Get robot position and move it            
+            [x, y, theta] = obj.ekf.state();
+            [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1 ; 0.05]);
             % Do the prediction
-            obj.ekf.prediction(controls);
+            obj.ekf.predict(signal, noise);
+            
         end
         
         % The main loop run by the Slam.m algorithm.

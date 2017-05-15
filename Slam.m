@@ -80,8 +80,9 @@ classdef (Sealed) Slam < handle
            closestPoints = {};
            for i = 1:size(lms, 1)
                 % bear = obj.computeBearing(x,y,lms(i,1),lms(i,2));                
+                dist = norm([lms(i,1),lms(i,2)]-[x,y]);
                 sep = Geom2d.sepPointLine([lms(i,1),lms(i,2)],[x,y],[toX,toY]);
-                if sep < r*2.5
+                if sep < r*2.5 && dist < r*4
                     closestPoints{end+1} = [lms(i,1),lms(i,2)];
                     if sep < r*1.5
                         inc = inc/5;
@@ -145,10 +146,10 @@ classdef (Sealed) Slam < handle
        function runSimulation(obj)
            while obj.startFlag == true
                obj.deleteOldRobot();
-               [s, t] = obj.getSpeedAndRotation();
-               %[s, t] = obj.plannedMotion();
-               obj.robot.simulate(s, t);
-               %obj.robot.simulateFake(s, t);
+               %[s, t] = obj.getSpeedAndRotation();
+               [s, t] = obj.plannedMotion();
+               %obj.robot.simulate(s, t);
+               obj.robot.simulateFake(s, t);
                if obj.checkCondition() == true
                    break;
                end
@@ -171,6 +172,7 @@ classdef (Sealed) Slam < handle
                pause(0.05);
                delete(d);
                delete(a);
+               delete(l);
                for i = 1:size(drawnLandmarks,2)
                    delete(drawnLandmarks(i));
                end
