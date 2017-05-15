@@ -57,6 +57,9 @@ handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
+set(handles.algMenu, 'Value', 1);
+set(handles.envMenu, 'Value', 1);
+Slam.initialize();
 
 % UIWAIT makes Gui wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -133,24 +136,6 @@ if get(hObject,'Value') == 1
     s.deleteScan();
 end
 
-% --- Executes on button press in groundTruth.
-function groundTruth_Callback(hObject, eventdata, handles)
-% hObject    handle to groundTruth (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of groundTruth
-
-
-% --- Executes on button press in estimatedMap.
-function estimatedMap_Callback(hObject, eventdata, handles)
-% hObject    handle to estimatedMap (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of estimatedMap
-
-
 % --- Executes on selection change in envMenu.
 function envMenu_Callback(hObject, eventdata, handles)
 % hObject    handle to envMenu (see GCBO)
@@ -224,7 +209,14 @@ function algMenu_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns algMenu contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from algMenu
-
+s = Slam.getInstance();
+contents = cellstr(get(hObject,'String'));
+str = contents{get(hObject,'Value')};
+if strcmp(str,'Using EKF') == true
+    s.usingEkf = true;
+else
+    s.usingEkf = false;
+end
 
 % --- Executes during object creation, after setting all properties.
 function algMenu_CreateFcn(hObject, eventdata, handles)

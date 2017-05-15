@@ -9,6 +9,7 @@ classdef (Sealed) Slam < handle
        env;
        robot;
        algorithm;
+       usingEkf = true;
        drawnRobot;
        scan;
        scanShown = false;
@@ -146,10 +147,14 @@ classdef (Sealed) Slam < handle
        function runSimulation(obj)
            while obj.startFlag == true
                obj.deleteOldRobot();
-               %[s, t] = obj.getSpeedAndRotation();
-               [s, t] = obj.plannedMotion();
-               %obj.robot.simulate(s, t);
-               obj.robot.simulateFake(s, t);
+               if obj.usingEkf == true
+                   [s, t] = obj.getSpeedAndRotation();
+                   obj.robot.simulate(s, t);
+               else
+                   [s, t] = obj.plannedMotion();
+                   obj.robot.simulateFake(s, t);
+               end
+               
                if obj.checkCondition() == true
                    break;
                end
@@ -172,7 +177,9 @@ classdef (Sealed) Slam < handle
                pause(0.05);
                delete(d);
                delete(a);
-               delete(l);
+               if obj.usingEkf == false
+                   delete(l);
+               end
                for i = 1:size(drawnLandmarks,2)
                    delete(drawnLandmarks(i));
                end
@@ -263,7 +270,20 @@ classdef (Sealed) Slam < handle
       end
       
       function test
+          Slam.initialize();
           Gui;
       end
+      
+      function initialize
+        s = Slam.getInstance();
+        s.usingEkf = true;
+        file = 'environments/env1.txt';
+        a = Environment;
+        a = a.readFile(file);
+        s.env = a;
+        s.robot.sensing.env = a;
+        s.robot.x = a.start(1);
+        s.robot.y = a.start(2); 
+      end      
    end
 end
