@@ -108,14 +108,6 @@ classdef (Sealed) Slam < handle
            end
            hold off
            
-%            if minSep < r*2
-%                if Geom2d.leftOf(closestPoint,[toX,toY],[x,y])                 
-%                    theta = theta + 90;
-%                else
-%                    theta = theta - 90;
-%                end
-%            end
-           
            if x - r*cos(ang) < r || x + r*cos(ang) > 10-r ||...
               y - r*sin(ang) < r || y + r*sin(ang) > 10-r
                s = 0;
@@ -158,7 +150,6 @@ classdef (Sealed) Slam < handle
                if obj.checkCondition() == true
                    break;
                end
-               
                obj.showRobot();
                landmarks = obj.robot.getLandmarkPositions();
                hold on

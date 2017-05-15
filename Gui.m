@@ -59,6 +59,8 @@ handles.output = hObject;
 guidata(hObject, handles);
 set(handles.algMenu, 'Value', 1);
 set(handles.envMenu, 'Value', 1);
+set(handles.quitText,'String','');
+cla;
 Slam.initialize();
 
 % UIWAIT makes Gui wait for user response (see UIRESUME)
@@ -178,6 +180,7 @@ function start_Callback(hObject, eventdata, handles)
 s = Slam.getInstance();
 if get(hObject,'Value') == true
     set(hObject,'String','Quit');
+    set(handles.quitText,'String','Quitting may be a bit slow when using EKF');
     set(handles.envMenu,'enable','off');
     set(handles.algMenu,'enable','off');
     set(handles.hideScan,'enable','on');
@@ -190,6 +193,7 @@ if get(hObject,'Value') == true
     s.runSimulation();
 else
     set(hObject,'String','Start');
+    set(handles.quitText,'String','');
     set(handles.envMenu,'enable','on');
     set(handles.algMenu,'enable','on');
     set(handles.hideScan,'enable','off');
