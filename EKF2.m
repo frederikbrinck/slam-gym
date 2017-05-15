@@ -237,7 +237,7 @@ classdef EKF2 < handle
         
         function lms = lms(obj)
             lms = [];
-            for i = 1:(size(obj.x, 1) - 3):2
+            for i = 1:(size(obj.x, 1) - 3)/2
                 id = 2 + 2*i;
                 lms = [lms ; obj.x(id:(id+1))'];
             end
