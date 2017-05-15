@@ -145,16 +145,16 @@ classdef (Sealed) Slam < handle
        function runSimulation(obj)
            while obj.startFlag == true
                obj.deleteOldRobot();
-               % [s, t] = obj.getSpeedAndRotation();
-               [s, t] = obj.plannedMotion();
-               % obj.robot.simulate(s, t);
-               obj.robot.simulateFake(s, t);
+               [s, t] = obj.getSpeedAndRotation();
+               %[s, t] = obj.plannedMotion();
+               obj.robot.simulate(s, t);
+               %obj.robot.simulateFake(s, t);
                if obj.checkCondition() == true
                    break;
                end
                
                obj.showRobot();
-               %landmarks = obj.robot.getLandmarkPositions();
+               landmarks = obj.robot.getLandmarkPositions();
                hold on
                l = plot([obj.robot.x,obj.env.goal(1)],[obj.robot.y,obj.env.goal(2)]);
                d = obj.showEstRobot();
@@ -168,11 +168,11 @@ classdef (Sealed) Slam < handle
                hold off
                
                pause(0.05);
-%                delete(d);
-%                delete(a);
-%                for i = 1:size(drawnLandmarks,2)
-%                    delete(drawnLandmarks(i));
-%                end
+               delete(d);
+               delete(a);
+               for i = 1:size(drawnLandmarks,2)
+                   delete(drawnLandmarks(i));
+               end
            end
            obj.deleteOldRobot();
        end
