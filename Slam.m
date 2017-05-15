@@ -10,7 +10,6 @@ classdef (Sealed) Slam < handle
        robot;
        algorithm;
        drawnRobot;
-       drawnLandmarks;
        scan;
        scanShown = false;
        setScan = false;
@@ -160,21 +159,20 @@ classdef (Sealed) Slam < handle
                l = plot([obj.robot.x,obj.env.goal(1)],[obj.robot.y,obj.env.goal(2)]);
                d = obj.showEstRobot();
                a = obj.showEstArrow();
-               %for i = 1:size(landmarks, 1)
-               %    l = landmarks(i, :);
-               %    d = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
-               %    obj.drawnLandmarks = [obj.drawnLandmarks d];
-               %end
+               drawnLandmarks = [];
+               for i = 1:size(landmarks, 1)
+                   l = landmarks(i, :);
+                   lm = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
+                   drawnLandmarks = [drawnLandmarks lm];
+               end
                hold off
                
                pause(0.05);
-               delete(d);
-               delete(l);
-               delete(a);
-               %for i = 1:length(obj.drawnLandmarks)
-               %    delete(obj.drawnLandmarks(i));
-               %    obj.drawnLandmarks(i) = [];
-               %end
+%                delete(d);
+%                delete(a);
+%                for i = 1:size(drawnLandmarks,2)
+%                    delete(drawnLandmarks(i));
+%                end
            end
            obj.deleteOldRobot();
        end
@@ -199,13 +197,13 @@ classdef (Sealed) Slam < handle
        end
        
        function d = showEstRobot(obj)
-           state = obj.robot.ekf.state();
-           d = Draw.disc([state(1), state(2)], 0.5, 360, 0, [0, 0.5, 0]);
+           [x, y, ~] = obj.robot.ekf.state();
+           d = Draw.disc([x y], 0.5, 360, 0, [0, 0.5, 0]);
        end
        
        function d = showEstArrow(obj)
-           state = obj.robot.ekf.state();
-           d = Draw.arrow([state(1), state(2)], 0.5, state(3));
+           [x, y, t] = obj.robot.ekf.state();
+           d = Draw.arrow([x y], 0.5, t);
        end 
        
        function showRobot(obj)
@@ -231,7 +229,9 @@ classdef (Sealed) Slam < handle
       function obj = Slam(filename, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold)
           if nargin < 1
               filename = 'environments/env1.txt';
-              theta = 45;
+              x = 6;
+              y = 2;
+              theta = 90;
               radius = 0.5;
               odometryMaxTheta = 4;
               odometryMaxSpeed = 4;

@@ -1,7 +1,7 @@
 classdef LandmarkDatabase < handle
     properties
         landmarks = [];
-        maxAssociateError = 0.5;
+        maxAssociateError = 10;
         maxLandmarkError = 0.8;
 
         % New landmarks do not need to get updated through EKF. Keep

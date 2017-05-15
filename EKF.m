@@ -23,7 +23,7 @@ classdef EKF < handle
                 initialUncertainty = .1;
             end
             v = initialUncertainty*ones(1, 3);
-            obj.p_hat = diag(v);
+            obj.p_hat = zeros(3,3);
             obj.Q = [[deltaR 0];[0 deltaB]]; 
         end
         
@@ -58,21 +58,22 @@ classdef EKF < handle
                 lJ = 2 + 2*j;
                 nLandmarks = (size(obj.x_hat, 1) - 3)/2;
                 if j <= nLandmarks
-                    delta = [(obj.x_hat(lJ) - x_t); ...
-                             (obj.x_hat(lJ + 1) - y_t)]; 
-                    q = delta'*delta;
-                    z_est = [sqrt(q); atan2d(delta(2), delta(1)) - th_t];
-                    F_xj = [eye(3); zeros(2,3)];
-                    F_xj = [F_xj zeros(5, 2*nLandmarks)];
-                    F_xj (4:5, (2*j + 2):(2*j+3)) = eye(2);
-
-                    temp = [[-sqrt(q)*delta(1) -sqrt(q)*delta(2) 0 sqrt(q)*delta(1) sqrt(q)*delta(2)];...
-                        [delta(2) -delta(1) -q -delta(2) delta(1)]];
-                    H = 1/q * temp * F_xj;
-                    K = (obj.p_hat * H') / (H * obj.p_hat * H' + obj.Q);
-                    obj.x_hat = obj.x_hat + K*([z_i.range z_i.bearing]' - z_est);
-                    KH = K*H;
-                    obj.p_hat = (eye(size(KH,1)) - KH)*obj.p_hat;
+                    y_i = obj.computeBearing([obj.x_hat(lJ) obj.x_hat(lJ + 1)])';
+                    h_i = [z_i.range z_i.bearing]';
+                    z = y_i-h_i;
+                    H_r = [(z_i.position(1) - x_t)/z_i.range (z_i.position(2) - y_t)/z_i.range 0;...
+                           (z_i.position(2) - y_t)/(z_i.range^2) -(z_i.position(1) - x_t)/(z_i.range^2) -1];
+                    H_l = [(x_t - z_i.position(1))/z_i.range (y_t - z_i.position(2))/z_i.range;...
+                           (y_t - z_i.position(2))/(z_i.range^2) -(x_t - z_i.position(1))/(z_i.range^2)];
+                    P_rr = obj.p_hat(1:3,1:3);
+                    P_rl = obj.p_hat(1:3,lJ:(lJ+1));
+                    P_ll = obj.p_hat(lJ:(lJ+1), lJ:(lJ+1));
+                    P_rm = obj.p_hat(1:3, 4:end);
+                    P_ml = obj.p_hat(4:end, lJ:(lJ+1));
+                    Z = [H_r H_l] * [P_rr P_rl; P_rl' P_ll] * [H_r H_l]' + Noise.measurementNoise(z_i.range);
+                    K = [P_rr P_rl; P_rm' P_ml] * [H_r'; H_l'] / Z; 
+                    obj.x_hat = obj.x_hat + K*z;
+                    obj.p_hat = obj.p_hat - K*Z*K';
                 end
             end
         end
@@ -94,8 +95,6 @@ classdef EKF < handle
                P_lx = G_r*[P_rr P_rm];
                obj.p_hat = [obj.p_hat; P_lx];
                obj.p_hat = [obj.p_hat [P_lx'; P_ll]];
-               %obj.p_hat = [obj.p_hat; [eye(2,3) zeros(2, 2*nLandmarks)]];
-               %obj.p_hat = [obj.p_hat [eye(2,3) zeros(2, 2*nLandmarks) eye(2,2)]'];
             end
         end
         
@@ -105,6 +104,20 @@ classdef EKF < handle
            for i = 1:(length(obj.x_hat) - 3):2
                lms = [lms; [landmarks(i) landmarks(i + 1)]];
            end
+        end
+        
+        function rb = computeBearing(obj, position)
+            x = obj.x_hat(1);
+            y = obj.x_hat(2);
+            theta = obj.x_hat(3);
+            u = [cosd(theta) sind(theta) 0];
+            v = [(position - [x y]) 0];
+            range = norm(v);
+            bearing = atan2d(norm(cross(v, u)),dot(v, u));
+            if ~Geom2d.leftOf([x y], [(x + u(1)) (y+u(2))], position)
+                bearing = -bearing;                
+            end
+            rb = [range bearing];
         end
     end
 end

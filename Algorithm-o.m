@@ -1,6 +1,8 @@
 %{
   Created by Mufei Li on 2017/05/04.
-  Modified by Frederik Jensen 2017/05/12  
+  Modified by Frederik Jensen 2017/05/12
+
+  
 %}
 
 classdef Algorithm < Robot
@@ -16,41 +18,11 @@ classdef Algorithm < Robot
     methods
         % Constructor of the algorithm class which instantiates the
         % super class robot, and runs the EKF filter.
-        function obj = Algorithm(sensorEnv, x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold)
-            if nargin < 2
-                theta = 45;
-                radius = 0.5;
-                odometryMaxTheta = 4;
-                odometryMaxSpeed = 4;
-                sensorAngle = 180;
-                sensorThreshold = 2;
-                x = sensorEnv.start(1);
-                y = sensorEnv.start(2);
-            end
-            
+        function obj = Algorithm(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorEnv, sensorAngle, sensorThreshold)
             obj = obj@Robot(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorEnv, sensorAngle, sensorThreshold);
 
-            % Get signal and measurement noise for EKF
-            s = [0.1;0.05];
-            S = diag(s.^2);
-            m = [1.5; 1*pi/180];
-            M = diag(m.^2);
-            
-            obj.ekf = EKF2([x y theta], s, S, m, M);
+            obj.ekf = EKF([x y theta], 0.1, 0.1);
             obj.db = LandmarkDatabase();
-        end
-        
-        function bool = simulateFake(obj,s,t)
-            if nargin < 3
-                s = 0.1;
-                t = 0;
-            end
-            bool = false;
-            % Get robot position and move it
-            state = obj.ekf.state();
-            controls = obj.moveNoisy(state, s, t);
-            % Do the prediction
-            obj.ekf.prediction(controls);
         end
         
         % The main loop run by the Slam.m algorithm.
@@ -59,32 +31,32 @@ classdef Algorithm < Robot
                 s = 0.1;
                 t = 0;
             end
-                        
-            bool = true;
-            % Get robot position and move the ground truth. In turn
-            % use the noised signal for ekf state prediction.
-            [x, y, theta] = obj.ekf.state();
-            [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1;0.05]);
-            % Do the prediction
-            obj.ekf.predict(signal, noise);
             
+            bool = true;
+            % Get robot position and move it
+            state = obj.ekf.state();
+            controls = obj.moveNoisy(state, s, t);
+            % Do the prediction
+            
+            obj.ekf.prediction(controls);
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();
             
-            % Get range bearing observations
-            [x, y, theta] = obj.ekf.state();
+            % Get estimated position from landmark
+            state = obj.ekf.state();
             for i = 1:size(observations,1)
                 [range, bearing] = obj.computeBearing(observations(i,:));
-                observations(i,:) =  [x y] + range * [cosd(bearing + theta) sind(bearing + theta)]; 
+                observations(i,:) =  [state(1) state(2)] + range * [cosd(bearing + state(3)) sind(bearing + state(3))]; 
             end
-            
             
             lms = obj.db.extractLandmarks(observations);
             for i = 1:size(lms, 2)
                  % Correct the estimates based on the current landmark.
                  lm = lms(i);
                  [range, bearing] = obj.computeBearing(lm.position);
-                 obj.ekf.correct(lm, [range bearing]); 
+                 lm.range = range;
+                 lm.bearing = bearing;
+                 obj.ekf.correction([lms(i)]); 
             end            
             
             % Extract all new landmarks
@@ -95,12 +67,12 @@ classdef Algorithm < Robot
                [range, bearing] = obj.computeBearing(lm.position);
                lm.range = range;
                lm.bearing = bearing;
-               obj.ekf.add(lm);
+               obj.ekf.addLandmark(lm);
             end
         end
         
         function lms = getLandmarkPositions(obj)
-           lms = obj.ekf.lms();
+           lms = obj.ekf.getLandmarks();
             %observations = obj.laserReadPoints();
             
             % Get estimated position from landmark
@@ -111,9 +83,11 @@ classdef Algorithm < Robot
             %end
         end
     end
-      
+   
+    
+    
     methods(Static)
-        function test(filename)
+        function s = test(filename)
             if nargin < 1
                 filename = 'environments/env2.txt';
             end
@@ -121,8 +95,8 @@ classdef Algorithm < Robot
             env = env.readFile(filename);
             env.showEnv();
             alg = Algorithm(1, 0, 30, 0.9, 6, 5, env, 180, 5);
-            while true
-                alg.simulate([0.1 0]);
+            while alg.simulate()
+                alg.drawRobot();
             end
         end
     end

@@ -23,19 +23,19 @@ classdef Noise
         function Q = processNoise(deltaX, deltaY, deltaTheta, exactness)
             W = [ -deltaX; deltaY; deltaTheta ]';
             if nargin<4 
-                exactness = 0.01;
+                exactness = 0.001;
             end
             C = normrnd(0, exactness, [3 3]);
-            Q = W*C*W';
+            Q = C;%W*C*W';
         end
         
         % assumes the angle measurement has a constant error in degrees.
         function measNoise = measurementNoise(range, rangeVar, bearingError)
             if nargin < 3
-                bearingError = 1;
+                bearingError = 0.001;
             end
             if nargin < 2
-                rangeVar = 0.01; % in meters
+                rangeVar = 0.001; % in meters
             end
             if nargin < 1
                 range = 5;
