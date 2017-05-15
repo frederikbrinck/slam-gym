@@ -54,7 +54,7 @@ classdef Robot < Odometry
             v = [(position - [x y]) 0];
             range = norm(v);
             bearing = atan2d(norm(cross(v, u)),dot(v, u));
-            if ~Geom2d.leftOf([x y], [(x + u(1)) (y+u(2))], position)
+            if Geom2d.leftOf([x y], [(x + u(1)) (y+u(2))], position)
                 bearing = -bearing;                
             end
         end

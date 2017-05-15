@@ -101,17 +101,19 @@ classdef Odometry < handle
             obj.move(s * cosd(t + obj.theta), s * sind(t + obj.theta), t);
 
             % Get noise and return position with noise accordingly.
-            noise = noise .* Noise.gaussian(2,1);
-%             if s == 0 && t == 0
-%                 % No movement, so no noise.
-%                 noisyUpdate = [0 0];
-%             elseif s == 0
-%                 % Only rotation, so rotation noise.
-%                 noisyUpdate = [0 t] + [0 noise(2)];    
-%             else
+            if s == 0 && t == 0
+                % No movement, so no noise.
+                update = [0 0];
+                noise = [0 0];
+            elseif s == 0
+                % Only rotation, so rotation noise.
+                update = [0 t];
+                noise = [0 ; noise(2) .* Noise.gaussian(1,1)];
+            else
                 % Movement so add noise.
-             update = [s ; t] ;
-%             end
+                update = [s ; t];
+                noise = noise .* Noise.gaussian(2,1);
+            end
         end
     end
 end

@@ -163,7 +163,8 @@ classdef (Sealed) Slam < handle
                for i = 1:size(landmarks, 1)
                    l = landmarks(i, :);
                    lm = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
-                   drawnLandmarks = [drawnLandmarks lm];
+                   disp(obj.robot.ekf.x);
+                   drawnLandmarks = [drawnLandmarks lm];                   
                end
                hold off
                
@@ -236,7 +237,7 @@ classdef (Sealed) Slam < handle
               odometryMaxTheta = 4;
               odometryMaxSpeed = 4;
               sensorAngle = 180;
-              sensorThreshold = 2;
+              sensorThreshold = 8;
               sensorEnv = Environment;
           end
           sensorEnv = sensorEnv.readFile(filename);

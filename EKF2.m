@@ -29,6 +29,7 @@ classdef EKF2 < handle
         % Frame transformation that returns the a point p
         % from the robot frame to the global coordinate frame.
         function [p, Jr, Jpr] = ff(obj, robot, pr) 
+            
             % Get robot parameters d = [x y], t = theta
             d = robot(1:2);
             t = robot(3);
@@ -75,7 +76,7 @@ classdef EKF2 < handle
                 
                 % Compute jacobian with respect to the robot state.
                 Jr = [[-cosd(t), -sind(t),  cosd(t)*(py - ry) - sind(t)*(px - rx)]; ...
-                      [sind(t), -cosd(t), -cosd(t)*(px - rx) - sind(t)*(px - rx)]];
+                      [ sind(t), -cosd(t), -cosd(t)*(px - rx) - sind(t)*(py - ry)]];
                 
                 % Compute jacobian with respect to the point in the global
                 % frame.
@@ -116,11 +117,10 @@ classdef EKF2 < handle
             r = [p; rt]; 
         end
         
-        function [o, Jor, Jop] = observe(obj, p) 
+        function [o, Jor, Jop] = observe(obj, robot, p) 
             % Get point in robot frame before
             % performing the observation.
-            [pr, Jr, Jp] = obj.tf(obj.x(1:3), p);
-            
+            [pr, Jr, Jp] = obj.tf(robot, p);
             prx = pr(1);
             pry = pr(2);
             
@@ -143,7 +143,7 @@ classdef EKF2 < handle
             end
         end
         
-        function [p, Jr, Jopr] = iobserve(obj, o)
+        function [p, Jr, Jopr] = iobserve(obj, robot, o)
             % Get range and bearing
             r = o(1);
             b = o(2);
@@ -153,7 +153,7 @@ classdef EKF2 < handle
             ox = r * cosd(b);
             oy = r * sind(b);
             pr = [ox ; oy];
-            [p, Jr, Jpr] = obj.ff(obj.x(1:3), pr);
+            [p, Jr, Jpr] = obj.ff(robot, pr);
 
             if nargout > 1
                 % Compute jacobians using the 
@@ -168,18 +168,20 @@ classdef EKF2 < handle
             [obj.x(1:3), Jr, Jn] = obj.move(signal, noise);
             % Get robot covariance matrix.
             Prr = obj.P(1:3, 1:3);
+            
+            % Update robot covariance.
+            obj.P(1:3,1:3) = Jr*Prr*Jr' + Jn*obj.sv*Jn';
+            
             % Update robot landmark cross covariances.
             obj.P(1:3,:) = Jr*obj.P(1:3,:);
             obj.P(:,1:3) = obj.P(1:3,:)';
-            % Update robot covariance.
-            obj.P(1:3,1:3) = Jr*Prr*Jr' + Jn*obj.sv*Jn';
         end
         
-        function correct(obj, landmark, obs) 
-            idx = 2 + 2*landmark.id;
+        function correct(obj, id, rbT, pos) 
+            idx = 2 + 2*id;
             lm = obj.x(idx:(idx+1));
             % Get expected landmark range and bearing.
-            [rb, Jr, Jp] = obj.observe(lm);
+            [rb, Jr, Jp] = obj.observe(obj.x(1:3), pos);
             Jrp = [Jr Jp];
             
             % Compute expected matrix.
@@ -187,7 +189,9 @@ classdef EKF2 < handle
             E = Jrp * obj.P(index, index) * Jrp';
             
             % Let's find the innovation
-            z = obs' - rb;
+            disp([rbT rb]);
+            z = rbT - rb;
+            disp(z);
             
 %             if z(2) > pi
 %                 z(2) = z(2) - 2*pi;
@@ -207,20 +211,16 @@ classdef EKF2 < handle
             obj.P = obj.P - K * Z * K';
         end
         
-        function add(obj, landmark)
-            % Get landmark id and observation detials
-            obs = [landmark.range landmark.bearing];
-            
+        function add(obj, pos)
             % Add landmark to state vector by computing its position.
-            [lm, Jr, Jo] = obj.iobserve(obs);
+            [lm, Jr, Jo] = obj.iobserve(obj.x(1:3), pos);
             obj.x = [obj.x; lm];
-            
 
             % Update the covariance matrix properly.
             Prm = Jr * obj.P(1:3,:);
             Prr = Jr * obj.P(1:3,1:3) * Jr' + Jo * obj.mv * Jo';
             obj.P = [obj.P ; Prm];
-            obj.P = [obj.P [Prm Prr]'];
+            obj.P = [obj.P [Prm' ; Prr]];
         end
         
         function [x, y, t] = state(obj)

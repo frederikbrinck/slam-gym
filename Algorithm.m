@@ -23,7 +23,7 @@ classdef Algorithm < Robot
                 odometryMaxTheta = 4;
                 odometryMaxSpeed = 4;
                 sensorAngle = 180;
-                sensorThreshold = 2;
+                sensorThreshold = 8;
                 x = sensorEnv.start(1);
                 y = sensorEnv.start(2);
             end
@@ -64,38 +64,33 @@ classdef Algorithm < Robot
             % Get robot position and move the ground truth. In turn
             % use the noised signal for ekf state prediction.
             [x, y, theta] = obj.ekf.state();
-            [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1;0.05]);
+            [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1 ; 0.05]);
             % Do the prediction
             obj.ekf.predict(signal, noise);
             
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();
-            
-            % Get range bearing observations
-            [x, y, theta] = obj.ekf.state();
+            rbT = zeros(size(observations));
             for i = 1:size(observations,1)
-                [range, bearing] = obj.computeBearing(observations(i,:));
-                observations(i,:) =  [x y] + range * [cosd(bearing + theta) sind(bearing + theta)]; 
+                rbT(i,:) = obj.ekf.observe([obj.x ; obj.y; obj.theta], observations(i,:)');
             end
             
-            
-            lms = obj.db.extractLandmarks(observations);
-            for i = 1:size(lms, 2)
+            for i = 1:size(rbT, 2):2
                  % Correct the estimates based on the current landmark.
-                 lm = lms(i);
-                 [range, bearing] = obj.computeBearing(lm.position);
-                 obj.ekf.correct(lm, [range bearing]); 
+                 j = 2 + 2*i;
+                 if j < size(obj.ekf.x, 1)
+                    obj.ekf.correct(i, rbT', observations(i,:)'); 
+                 end
             end            
             
             % Extract all new landmarks
-            nlms = obj.db.addNewLandmarks();
-            for i = 1:size(nlms, 2)
-               % Get landmark and add it to ekf. 
-               lm = nlms(i);
-               [range, bearing] = obj.computeBearing(lm.position);
-               lm.range = range;
-               lm.bearing = bearing;
-               obj.ekf.add(lm);
+            for i = 1:size(rbT, 2):2
+                j = 2 + 2*i;
+                if j >= size(obj.ekf.x, 1)
+                    % Get landmark and add it to ekf. 
+                    
+                    obj.ekf.add(rbT(i,:)');
+                end
             end
         end
         
