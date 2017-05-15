@@ -66,24 +66,77 @@ classdef (Sealed) Slam < handle
        end
        
        function [s, theta] = plannedMotion(obj) 
-           s = 0.1;          
+           inc = 0.1;
+           s = inc;
+           lms = obj.robot.sensing.laserReadPoints(obj.robot.x...
+                       ,obj.robot.y,obj.robot.theta);
+           
            [x, y, t] = obj.robot.getPosition();
-           position = obj.env.goal - [x y]; 
+           toX = obj.env.goal(1);
+           toY = obj.env.goal(2);
+           bearing = obj.computeBearing(x,y,toX,toY);
+           
+           r = obj.robot.radius;
+           ang = obj.robot.theta;
+           closestPoints = {};
+           for i = 1:size(lms, 1)
+                % bear = obj.computeBearing(x,y,lms(i,1),lms(i,2));                
+                sep = Geom2d.sepPointLine([lms(i,1),lms(i,2)],[x,y],[toX,toY]);
+                if sep < r*2.5
+                    closestPoints{end+1} = [lms(i,1),lms(i,2)];
+                    if sep < r*1.5
+                        inc = inc/5;
+                    end
+                end
+           end
+           
+           theta = bearing - t;
+           
+           for i = 1:length(closestPoints)
+               bear = obj.computeBearing(x,y,closestPoints{1}(1),closestPoints{1}(2)); 
+               deg = t-bear;
+               if abs(deg) < 90
+                  hold on
+                  if deg < 0
+                      theta = theta - 50;
+                  else
+                      theta = theta + 50;
+                  end
+                  plot([x,closestPoints{1}(1)],[y,closestPoints{1}(2)]);
+               end
+           end
+           hold off
+           
+%            if minSep < r*2
+%                if Geom2d.leftOf(closestPoint,[toX,toY],[x,y])                 
+%                    theta = theta + 90;
+%                else
+%                    theta = theta - 90;
+%                end
+%            end
+           
+           if x - r*cos(ang) < r || x + r*cos(ang) > 10-r ||...
+              y - r*sin(ang) < r || y + r*sin(ang) > 10-r
+               s = 0;
+               theta = theta + 180;
+           end
+       end
+       
+       function bearing = computeBearing(~,x,y,toX,toY)
+           position = [toX toY] - [x y]; 
            position = position/norm(position);
            u = [1 0 0]; 
            v = [position 0];
-           
            bearing = atan2d(norm(cross(v, u)),dot(v, u));
            a = cross(v,u);
            if a(3) > 0;
                bearing = 360 - bearing;
            end
-           theta = bearing - t;
        end
        
        function bool = checkCondition(obj)
            [x, y, ~] = obj.robot.getPosition();
-           if norm([x y] - obj.env.goal) < 1
+           if norm([x y] - obj.env.goal) < 0.5
                bool = true;
            else
                bool = false;
@@ -95,33 +148,33 @@ classdef (Sealed) Slam < handle
                obj.deleteOldRobot();
                % [s, t] = obj.getSpeedAndRotation();
                [s, t] = obj.plannedMotion();
-               obj.robot.simulate(s, t);
-               
+               % obj.robot.simulate(s, t);
+               obj.robot.simulateFake(s, t);
                if obj.checkCondition() == true
                    break;
                end
                
-               % BASIC MOTION PLAN. ODOMETRY AND MOTION WILL GO BELOW
-               % obj.change(0.1,0.1,10);
                obj.showRobot();
-               landmarks = obj.robot.getLandmarkPositions();
+               %landmarks = obj.robot.getLandmarkPositions();
                hold on
+               l = plot([obj.robot.x,obj.env.goal(1)],[obj.robot.y,obj.env.goal(2)]);
                d = obj.showEstRobot();
                a = obj.showEstArrow();
-               for i = 1:size(landmarks, 1)
-                   l = landmarks(i, :);
-                   d = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
-                   obj.drawnLandmarks = [obj.drawnLandmarks d];
-               end
+               %for i = 1:size(landmarks, 1)
+               %    l = landmarks(i, :);
+               %    d = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
+               %    obj.drawnLandmarks = [obj.drawnLandmarks d];
+               %end
                hold off
                
                pause(0.05);
                delete(d);
+               delete(l);
                delete(a);
-               for i = 1:length(obj.drawnLandmarks)
-                   delete(obj.drawnLandmarks(i));
-                   obj.drawnLandmarks(i) = [];
-               end
+               %for i = 1:length(obj.drawnLandmarks)
+               %    delete(obj.drawnLandmarks(i));
+               %    obj.drawnLandmarks(i) = [];
+               %end
            end
            obj.deleteOldRobot();
        end

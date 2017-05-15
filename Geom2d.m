@@ -126,6 +126,12 @@ classdef Geom2d
             end
         end
         
+        % Separation between a point (P) and a line defined by Q2 and Q1
+        % https://www.mathworks.com/matlabcentral/newsreader/view_thread/164048
+        function sep = sepPointLine(P,Q1,Q2)
+            sep = abs(det([Q2-Q1;P-Q1]))/norm(Q2-Q1); % for row vectors.
+        end
+        
         % Checks if p3 is to the left of the edge defined by points p1 and
         % p2 where we assume that p1 and p2 are 2-dimensional vectors
         function bool = leftOf(p1,p2,p3)

@@ -33,6 +33,19 @@ classdef Algorithm < Robot
             obj.db = LandmarkDatabase();
         end
         
+        function bool = simulateFake(obj,s,t)
+            if nargin < 3
+                s = 0.1;
+                t = 0;
+            end
+            bool = false;
+            % Get robot position and move it
+            state = obj.ekf.state();
+            controls = obj.moveNoisy(state, s, t);
+            % Do the prediction
+            obj.ekf.prediction(controls);
+        end
+        
         % The main loop run by the Slam.m algorithm.
         function bool = simulate(obj, s, t)
             if nargin < 3

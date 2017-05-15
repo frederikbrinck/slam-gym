@@ -1,4 +1,4 @@
-%file: env1.txt
+%file: env4.txt
 %
 %   Note that comments denoted with % are ignored.
 %   
@@ -16,31 +16,28 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Start
-PX: 2
-PY: 2
+PX: 5
+PY: 7
 
 % Goal
-PX: 9
-PY: 9
+PX: 5
+PY: 1
 
 % Bounding Box:
 PX: 0 0 10 10 		
 PY: 0 10 10 0	
 
 % Point
-PX: 5
-PY: 8
-
-PX: 1
-PY: 4
-
-PX: 4
-PY: 3
+PX: 3
+PY: 5
 
 PX: 4
 PY: 5
 
+PX: 5
+PY: 4
+
 PX: 7
-PY: 7
+PY: 5
 
 % End
