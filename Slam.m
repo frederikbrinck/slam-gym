@@ -125,10 +125,10 @@ classdef (Sealed) Slam < handle
            hold off
            
            % Handle the case of the boundary.
-           if x - r*cos(ang) < r || x + r*cos(ang) > 10-r ||...
-              y - r*sin(ang) < r || y + r*sin(ang) > 10-r
+           if x + r*cosd(ang) < r || x + r*cosd(ang) > 10-r ||...
+              y + r*sind(ang) < r || y + r*sind(ang) > 10-r
                s = 0;
-               theta = theta + 180;
+               theta = 180;
            end
        end
        
@@ -299,7 +299,7 @@ classdef (Sealed) Slam < handle
       % Initialise the slam environment.
       function initialize
         s = Slam.getInstance();
-        s.usingEkf = true;
+        s.usingEkf = false;
         file = 'environments/env1.txt';
         a = Environment;
         a = a.readFile(file);
