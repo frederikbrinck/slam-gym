@@ -157,11 +157,11 @@ classdef (Sealed) Slam < handle
                d = obj.showEstRobot();
                a = obj.showEstArrow();
                drawnLandmarks = [];
+               drawnUncertainties = [];
                for i = 1:size(landmarks, 1)
                    l = landmarks(i, :);
-                   lm = Draw.disc([l(1), l(2)], 0.2, 360, 0, [0,0,1]);
-                   disp(obj.robot.ekf.x);
-                   drawnLandmarks = [drawnLandmarks lm];                   
+                   lm = Draw.disc([l(1), l(2)], l(3), 360, 0, [0,0,1]);
+                   drawnLandmarks = [drawnLandmarks lm];
                end
                hold off
                

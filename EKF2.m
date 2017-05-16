@@ -1,22 +1,22 @@
-% This implementation is based primarily on the EKF-SLAM tutorial 
-% http://ais.informatik.uni-freiburg.de/teaching/ws12/mapping/pdf/slam04-ekf-slam.pdf
-% Which in turn is based on Thurn et al. "Probabilistic robotics", ch.10.
+% This implementation does NOT work. It remains in debugging mode. 
+% It is based on the Intro Slam Guide given by Joan Solà in
+% http://www.iri.upc.edu/people/jsola/JoanSola/objectes/curs_SLAM/SLAM2D/SLAM%20course.pdf
 
 classdef EKF2 < handle
-    % Initialize with initial robot configuration, uncertainty in range 
-    % and bearing (from the sensor) and (optionally) the uncertainty in 
-    % initial robot position.
-    % 
     properties
         x; % Robot state
         l; % Landmarks
         P; % Covariance matrix
-        sn; % Signal noise and variation
-        sv;
-        mn; % Measurement noise and variation
-        mv;
+        sn; % Signal noise 
+        sv; % Signal variation
+        mn; % Measurement noise
+        mv; % Measurement variation
     end
+    
     methods
+        % Initialize with initial robot configuration, uncertainty in range 
+        % and bearing (from the sensor) and (optionally) the uncertainty in 
+        % initial robot position.
         function obj = EKF2(x, snoise, svar, mnoise, mvar)
             obj.sn = snoise;
             obj.sv = svar;
@@ -84,6 +84,8 @@ classdef EKF2 < handle
             end
         end
         
+        % Updates the state by motion with respect to the move signal
+        % and the noise.
         function [r, Jrm, Jnm] = move(obj, signal, noise) 
             % Load in state angle and add noise
             % to speed and theta
@@ -92,12 +94,6 @@ classdef EKF2 < handle
             rt = signal(2) + t + noise(2);
             % Coordinate in robot frame
             tp = [s;0];
-%             if ao > pi
-%                 ao = ao - 2*pi;
-%             end
-%             if ao < -pi
-%                 ao = ao + 2*pi;
-%             end
 
             if nargout > 1      
                 % Return moved point from robot frame
@@ -117,6 +113,8 @@ classdef EKF2 < handle
             r = [p; rt]; 
         end
         
+        % Returns the range and bearing of landmark at position p with
+        % respect to the robot frame.
         function [o, Jor, Jop] = observe(obj, robot, p) 
             % Get point in robot frame before
             % performing the observation.
@@ -143,6 +141,9 @@ classdef EKF2 < handle
             end
         end
         
+        % Returns the inverse observation, that is, given an observation
+        % in range and bearing, return the landmark position with respect
+        % to the robot frame.
         function [p, Jr, Jopr] = iobserve(obj, robot, o)
             % Get range and bearing
             r = o(1);
@@ -164,6 +165,8 @@ classdef EKF2 < handle
             end
         end
         
+        % Given a signal and some noise, predict the
+        % next state of the robot.
         function predict(obj, signal, noise) 
             [obj.x(1:3), Jr, Jn] = obj.move(signal, noise);
             % Get robot covariance matrix.
@@ -177,6 +180,10 @@ classdef EKF2 < handle
             obj.P(:,1:3) = obj.P(1:3,:)';
         end
         
+        % Perform a correction given the id of the landmark,
+        % its range and bearing with respect to the ground truth,
+        % and its position so that we can compute the expected 
+        % landmark position.
         function correct(obj, id, rbT, pos) 
             idx = 2 + 2*id;
             lm = obj.x(idx:(idx+1));
@@ -189,28 +196,18 @@ classdef EKF2 < handle
             E = Jrp * obj.P(index, index) * Jrp';
             
             % Let's find the innovation
-            disp([rbT rb]);
             z = rbT - rb;
-            disp(z);
-            
-%             if z(2) > pi
-%                 z(2) = z(2) - 2*pi;
-%             end
-%             if z(2) < -pi
-%                 z(2) = z(2) + 2*pi;
-%             end
 
             % Compute the Kalman gain based on the expected matrix
             Z = E + obj.mv;
             K = obj.P(:, index) * Jrp' * Z^(-1);
 
             % Update the state.
-            zzz = K*z;
-            zzzz = K*Z*K';
             obj.x = obj.x + K * z;
             obj.P = obj.P - K * Z * K';
         end
         
+        % Add a landmark to the EKF state matrix.
         function add(obj, pos)
             % Add landmark to state vector by computing its position.
             [lm, Jr, Jo] = obj.iobserve(obj.x(1:3), pos);
@@ -223,23 +220,32 @@ classdef EKF2 < handle
             obj.P = [obj.P [Prm' ; Prr]];
         end
         
+        % Return the state of the robot, that is, its estimated 
+        % x, y and theta coordinates
         function [x, y, t] = state(obj)
             x = obj.x(1);
             y = obj.x(2);
             t = obj.x(3);
         end
         
+        % Returns the estimated position of the landmark corresponding
+        % to id
         function [x, y] = lm(obj, id)
             idx = 2 + 2*id;
             x = obj.x(idx);
             y = obj.x(idx+1);
         end
         
+        % Returns a matrix of all seen landmarks in which each row is a
+        % three dimensional vector that holds the position x and y, 
+        % and the uncertainty of the landmark
         function lms = lms(obj)
             lms = [];
             for i = 1:(size(obj.x, 1) - 3)/2
                 id = 2 + 2*i;
-                lms = [lms ; obj.x(id:(id+1))'];
+                % Compute uncertainties
+                unc = (obj.P(id, id)^2 + obj.P((id+1),(id+1)))^(1/2);
+                lms = [lms ; [obj.x(id:(id+1))' unc]];
             end
         end
     end

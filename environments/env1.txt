@@ -43,4 +43,20 @@ PY: 5
 PX: 7
 PY: 7
 
+PX: 2 
+PY: 1
+
+PX: 3
+PY: 1.5
+
+PX: 5
+PY: 2
+
+PX: 3
+PY: 1.5
+
+PX: 1
+PY: 5
+
+
 % End

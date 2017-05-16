@@ -1,6 +1,11 @@
 %{
   Created by Mufei Li on 2017/05/04.
   Modified by Frederik Jensen 2017/05/12  
+
+  The main algorithm run by Slam.m. This algorithm should be responsible
+  for estimating the robots position and mapping out the terrain. 
+  The implementation is based off of EKF and is using the file EKF2. 
+  Unfortunately, it is currently not working.
 %}
 
 classdef Algorithm < Robot
@@ -23,11 +28,12 @@ classdef Algorithm < Robot
                 odometryMaxTheta = 4;
                 odometryMaxSpeed = 4;
                 sensorAngle = 180;
-                sensorThreshold = 8;
+                sensorThreshold = 2;
                 x = sensorEnv.start(1);
                 y = sensorEnv.start(2);
             end
             
+            % Call the super class
             obj = obj@Robot(x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorEnv, sensorAngle, sensorThreshold);
 
             % Get signal and measurement noise for EKF
@@ -36,10 +42,13 @@ classdef Algorithm < Robot
             m = [1.5; 1*pi/180];
             M = diag(m.^2);
             
+            % Initialise EKF and the landmark database.
             obj.ekf = EKF2([x y theta], s, S, m, M);
             obj.db = LandmarkDatabase();
         end
         
+        % The main loop run by Slam.m algorithm WITHOUT using EKF
+        % landmark correction.
         function bool = simulateFake(obj,s,t)
             if nargin < 3
                 s = 0.1;
@@ -54,70 +63,67 @@ classdef Algorithm < Robot
             
         end
         
-        % The main loop run by the Slam.m algorithm.
+        % The main loop run by the Slam.m algorithm using the EKF
+        % with landmark correction (note this is NOT working properly.)
         function bool = simulate(obj, s, t)
             if nargin < 3
                 s = 0.1;
                 t = 0;
             end
-                        
             bool = true;
             % Get robot position and move the ground truth. In turn
             % use the noised signal for ekf state prediction.
             [x, y, theta] = obj.ekf.state();
             [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1 ; 0.05]);
             % Do the prediction
+            disp(obj.ekf.x(1:3))
             obj.ekf.predict(signal', noise');
+            disp(obj.ekf.x(1:3))
             
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();
             rbT = zeros(size(observations));
             for i = 1:size(observations,1)
-                rbT(i,:) = obj.ekf.observe([obj.x ; obj.y; obj.theta], observations(i,:)');
+                % Return the true range and bearing with noise added.
+                m = [1.5; 1*pi/180];
+                M = diag(m.^2);
+                rbT(i,:) = obj.ekf.observe([obj.x ; obj.y; obj.theta], observations(i,:)' + (M*randn(2,1)));
             end
-            
-            for i = 1:size(rbT, 2):2
+        
+            % Run through all landmarks.
+            for i = 1:size(rbT, 1)
                  % Correct the estimates based on the current landmark.
                  j = 2 + 2*i;
                  if j < size(obj.ekf.x, 1)
                     obj.ekf.correct(i, rbT(i,:)', observations(i,:)'); 
                  end
             end            
-            
+
             % Extract all new landmarks
-            disp(size(rbT,1));
             for i = 1:size(rbT, 1)
                 j = 2 + 2*i;
                 if j >= size(obj.ekf.x, 1)
-                    % Get landmark and add it to ekf. 
-                    
+                    % Get landmark and add it to ekf.                     
                     obj.ekf.add(rbT(i,:)');
                 end
             end
         end
         
+        % Return the landmark positions and uncertainties.
         function lms = getLandmarkPositions(obj)
            lms = obj.ekf.lms();
-            %observations = obj.laserReadPoints();
-            
-            % Get estimated position from landmark
-            %state = obj.ekf.state();
-            %for i = 1:size(observations,1)
-            %    [range, bearing] = obj.computeBearing(observations(i,:));
-            %    observations(i,:) =  [state(1) state(2)] + range * [cosd(bearing + state(3)) sind(bearing + state(3))]; 
-            %end
         end
     end
       
     methods(Static)
         function test(filename)
             if nargin < 1
-                filename = 'environments/env2.txt';
+                filename = 'environments/env1.txt';
             end
             env = Environment;
             env = env.readFile(filename);
             env.showEnv();
-            alg = Algorithm(1, 0, 30, 0.9, 6, 5, env, 180, 5);
+            alg = Algorithm(env, 1, 0, 30, 0.9, 6, 5, 180, 5);
             while true
                 alg.simulate([0.1 0]);
             end
