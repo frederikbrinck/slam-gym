@@ -1,0 +1,103 @@
+%file: env4.txt
+%
+%   Note that comments denoted with % are ignored.
+%   
+%   The structure of environment input files are as follows:
+%       Bounding Box X:   x_1, x_2 ... x_n (CW)
+%       Bounding Box Y:   y_1, y_2 ... y_n (CW)
+%       Polygon 1 X:      x_1, x_2 ... x_n (CCW)
+%       Polygon 1 Y:      y_1, y_2 ... y_n (CCW)
+%
+%       ...                                 ...
+%
+%       Polygon N X:      x_1, x_2 ... x_n (CCW)
+%       Polygon N Y:      y_1, y_2 ... y_n (CCW)
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Start
+PX: 7
+PY: 7
+
+% Goal
+PX: 2
+PY: 2
+
+% Bounding Box:
+PX: 0 0 10 10 		
+PY: 0 10 10 0	
+
+% Point
+PX: 0.4
+PY: 5
+
+PX: 0.8
+PY: 5
+
+PX: 1.2
+PY: 5
+
+PX: 1.6
+PY: 5
+
+PX: 2
+PY: 5
+
+PX: 2.4
+PY: 5
+
+PX: 2.8
+PY: 5
+
+PX: 3.2
+PY: 5
+
+PX: 3.6
+PY: 5
+
+PX: 4
+PY: 5
+
+PX: 4.4
+PY: 5
+
+PX: 4.8
+PY: 5
+
+PX: 5.2
+PY: 5
+
+PX: 5.6
+PY: 5
+
+PX: 6
+PY: 5
+
+PX: 6.4
+PY: 5
+
+PX: 6.8
+PY: 5
+
+PX: 7.2
+PY: 5
+
+PX: 7.6
+PY: 5
+
+PX: 8
+PY: 5
+
+PX: 8.4
+PY: 5
+
+PX: 8.8
+PY: 5
+
+PX: 9.2
+PY: 5
+
+PX: 9.6
+PY: 5
+
+% End
