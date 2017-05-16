@@ -22,7 +22,7 @@ function varargout = Gui(varargin)
 
 % Edit the above text to modify the response to help Gui
 
-% Last Modified by GUIDE v2.5 14-May-2017 22:17:10
+% Last Modified by GUIDE v2.5 15-May-2017 21:14:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,6 +60,7 @@ guidata(hObject, handles);
 set(handles.algMenu, 'Value', 1);
 set(handles.envMenu, 'Value', 1);
 set(handles.quitText,'String','');
+set(handles.moveText,'String','Move with arrow keys!');
 cla;
 Slam.initialize();
 
@@ -97,8 +98,7 @@ function figure1_WindowKeyPressFcn(hObject, eventdata, handles)
             s.left = true;
         case 'rightarrow'
             s.right = true;
-    end
-    
+    end    
 
 % --- Executes on button press in showScan.
 function showScan_Callback(hObject, eventdata, handles)
@@ -218,8 +218,10 @@ contents = cellstr(get(hObject,'String'));
 str = contents{get(hObject,'Value')};
 if strcmp(str,'Using EKF') == true
     s.usingEkf = true;
+    set(handles.moveText,'String','Move with arrow keys!');
 else
     s.usingEkf = false;
+    set(handles.moveText,'String','Automated motion!');
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -233,7 +235,6 @@ function algMenu_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
 
 % --- Executes on key release with focus on figure1 and none of its controls.
 function figure1_KeyReleaseFcn(hObject, eventdata, handles)
@@ -262,3 +263,22 @@ switch keyPressed
     case 'rightarrow'
         s.right = false;
 end
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+s = Slam.getInstance();
+set(handles.quitText,'String','');
+set(handles.envMenu,'enable','on');
+set(handles.algMenu,'enable','on');
+set(handles.hideScan,'enable','off');
+set(handles.showScan,'enable','off');
+set(handles.showScan, 'Value', 0);
+set(handles.hideScan, 'Value', 1);
+s.startFlag = false;
+s.stopSimulation();
+delete(hObject);
