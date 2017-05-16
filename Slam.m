@@ -230,8 +230,6 @@ classdef (Sealed) Slam < handle
       function obj = Slam(filename, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold)
           if nargin < 1
               filename = 'environments/env1.txt';
-              x = 6;
-              y = 2;
               theta = 90;
               radius = 0.5;
               odometryMaxTheta = 4;
