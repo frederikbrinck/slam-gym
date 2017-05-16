@@ -95,11 +95,11 @@ classdef Odometry < handle
             elseif s == 0
                 % Only rotation, so add rotation noise.
                 update = [0 t];
-                noise = [0 ; noise(2) .* Noise.gaussian(1,1)];
+                noise = [0 ; noise(2) .* randn(1, 1)];
             else
                 % Movement so add noise.
                 update = [s ; t];
-                noise = noise .* Noise.gaussian(2,1);
+                noise = noise .* randn(2,1);
             end
         end
     end
