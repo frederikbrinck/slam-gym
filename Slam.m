@@ -1,14 +1,16 @@
 %{
-	% Slam class.
-    % Is a singleton class
-    % Acts as a controller in the model-view-controller framework
-    % Explanation goes here
+	% The slam class is a singleton class that connects the GUI to the
+    % algorithm. It is the main entry point of the implementation and
+    % owns the main loop of the algorithm which is run during 
+    % simulation.
 %}
 classdef (Sealed) Slam < handle
    properties
+       % Key handles.
        env;
        robot;
        algorithm;
+       % Booleans for GUI logic.
        usingEkf = true;
        drawnRobot;
        scan;
@@ -17,29 +19,36 @@ classdef (Sealed) Slam < handle
        points = {};
        startFlag = false;
        estHandle;
+       % Keys for movement.
        up = false;
        down = false;
        left = false;
        right = false;
    end
    methods
+       % Wrapper for environment show.
        function show(obj)
            obj.env.showEnv();
        end
        
+       % Delete the drawn robot.
        function deleteOldRobot(obj)
            for i = 1:length(obj.drawnRobot)
                delete(obj.drawnRobot(i));
            end
        end
        
+       % Start a simulation.
        function startSimulation(obj)
            if obj.startFlag == true
                obj.show();
+               % Initiate algorithm.
                obj.robot = Algorithm(obj.env);
            end
        end
        
+
+       % Stop a simulation
        function stopSimulation(obj)
            if obj.startFlag == false
                obj.points = {};
@@ -48,6 +57,7 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       % Return speed and rotation for key movement.
        function [s, theta] = getSpeedAndRotation(obj) 
            s = 0;
            theta = 0;
@@ -65,6 +75,10 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       % Planned motion algorithn. This algorithm simply moves from 
+       % the start position towards the goal position with the purpose
+       % of avoiding collision with any obstacles by "circling" around
+       % them. It is not robust and works only for simple environments.
        function [s, theta] = plannedMotion(obj) 
            inc = 0.1;
            s = inc;
@@ -74,13 +88,14 @@ classdef (Sealed) Slam < handle
            [x, y, t] = obj.robot.getPosition();
            toX = obj.env.goal(1);
            toY = obj.env.goal(2);
+           % Get bearing to goal.
            bearing = obj.computeBearing(x,y,toX,toY);
            
            r = obj.robot.radius;
            ang = obj.robot.theta;
            closestPoints = {};
+           % Find points that we are about to collide with naively.
            for i = 1:size(lms, 1)
-                % bear = obj.computeBearing(x,y,lms(i,1),lms(i,2));                
                 dist = norm([lms(i,1),lms(i,2)]-[x,y]);
                 sep = Geom2d.sepPointLine([lms(i,1),lms(i,2)],[x,y],[toX,toY]);
                 if sep < r*2.5 && dist < r*4
@@ -91,8 +106,9 @@ classdef (Sealed) Slam < handle
                 end
            end
            
+           % Based on the bearing and the collision points, avoid
+           % upcoming obstacles by "nudging" the angle.
            theta = bearing - t;
-           
            for i = 1:length(closestPoints)
                bear = obj.computeBearing(x,y,closestPoints{1}(1),closestPoints{1}(2)); 
                deg = t-bear;
@@ -108,6 +124,7 @@ classdef (Sealed) Slam < handle
            end
            hold off
            
+           % Handle the case of the boundary.
            if x - r*cos(ang) < r || x + r*cos(ang) > 10-r ||...
               y - r*sin(ang) < r || y + r*sin(ang) > 10-r
                s = 0;
@@ -115,18 +132,23 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       % Computes the bearing given x and y position with respect
+       % to the x-axis. 
        function bearing = computeBearing(~,x,y,toX,toY)
            position = [toX toY] - [x y]; 
            position = position/norm(position);
            u = [1 0 0]; 
            v = [position 0];
+           % Get bearing
            bearing = atan2d(norm(cross(v, u)),dot(v, u));
            a = cross(v,u);
-           if a(3) > 0;
+           % Handle edge case.
+           if a(3) > 0
                bearing = 360 - bearing;
            end
        end
        
+       % Function that returns if we have reached goal or not.
        function bool = checkCondition(obj)
            [x, y, ~] = obj.robot.getPosition();
            if norm([x y] - obj.env.goal) < 0.5
@@ -136,20 +158,28 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       % Run the simulation and handle drawing and display of the proper
+       % objects.
        function runSimulation(obj)
            while obj.startFlag == true
                obj.deleteOldRobot();
+               % If we are using EKF allow for keyboard controls.
                if obj.usingEkf == true
                    [s, t] = obj.getSpeedAndRotation();
                    obj.robot.simulate(s, t);
                else
+               % Otherwise do planned motion.
                    [s, t] = obj.plannedMotion();
                    obj.robot.simulateFake(s, t);
                end
                
+               % Check for ending condition.
                if obj.checkCondition() == true
                    break;
                end
+               
+               % Draw all landmarks as observed by the robot, if we are
+               % using ekf.
                obj.showRobot();
                landmarks = obj.robot.getLandmarkPositions();
                hold on
@@ -165,6 +195,7 @@ classdef (Sealed) Slam < handle
                end
                hold off
                
+               % Delete all landmarks, if we are using ekf.
                pause(0.05);
                delete(d);
                delete(a);
@@ -178,6 +209,7 @@ classdef (Sealed) Slam < handle
            obj.deleteOldRobot();
        end
        
+       % Function used for hiding the scan.
        function deleteScan(obj)
            if obj.scanShown == true
                for i = 1:length(obj.scan)
@@ -187,6 +219,7 @@ classdef (Sealed) Slam < handle
            end
        end
        
+       % Function used for showing the scan.
        function showScan(obj)
            obj.deleteScan();
            x = obj.robot.x;
@@ -197,16 +230,19 @@ classdef (Sealed) Slam < handle
            obj.scanShown = true;
        end
        
+       % Show the estimated position of the robot for ekf.
        function d = showEstRobot(obj)
            [x, y, ~] = obj.robot.ekf.state();
            d = Draw.disc([x y], 0.5, 360, 0, [0, 0.5, 0]);
        end
        
+       % Show the estimated arrow of the robot for ekf.
        function d = showEstArrow(obj)
            [x, y, t] = obj.robot.ekf.state();
            d = Draw.arrow([x y], 0.5, t);
        end 
        
+       % Show the robot.
        function showRobot(obj)
            hold on
            obj.points{end+1} = [obj.robot.x, obj.robot.y];
@@ -216,16 +252,11 @@ classdef (Sealed) Slam < handle
            end
            hold off
        end
-       
-       function change(obj, dx, dy, dtheta)
-           if obj.startFlag == true
-               newPos = obj.robot.move(dx, dy, dtheta);
-               obj.robot.x = newPos(1);
-               obj.robot.y = newPos(2);
-               obj.robot.theta = newPos(3);
-           end
-       end
+      
    end
+   
+   % Constructor file which takes in all needed parameters, and,
+   % followingly, initiates the algorithm.
    methods (Access = private)
       function obj = Slam(filename, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold)
           if nargin < 1
@@ -248,21 +279,24 @@ classdef (Sealed) Slam < handle
           obj.robot = Algorithm(obj.env, x, y, theta, radius, odometryMaxTheta, odometryMaxSpeed, sensorAngle, sensorThreshold);
       end
    end
+   
+   % Handle the GUI initialisation by making the slam.m a singleton object.
    methods (Static)
       function singleObj = getInstance()
          persistent localObj
          if isempty(localObj) || ~isvalid(localObj)
-             disp('new');
              localObj = Slam();
          end
          singleObj = localObj;
       end
       
+      % Run the gui upon Slam.test()
       function test
           Slam.initialize();
           Gui;
       end
       
+      % Initialise the slam environment.
       function initialize
         s = Slam.getInstance();
         s.usingEkf = true;

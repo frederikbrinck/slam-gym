@@ -1,7 +1,7 @@
 %{
-	Geom2d class.
-
-    Explanation goes here...
+	Geom2d class, used for various things including calculating separation,
+    point circle overlap and more. Adapted from the original form of Geom2d     
+    used for the robotics class.
 %}
 
 classdef Geom2d
@@ -18,6 +18,8 @@ classdef Geom2d
         % allow for polygons with holes, but it can be extended to do so.
         %
         % The input is given as polygonal sets, i.e. a{i} = [X[] Y[]].
+        % This function was used for map metrics, but are currently not
+        % used.
         function intersect = polygonSetIntersect(a, b)
             % Recast input.
             for poly = 1:length(a)
@@ -70,7 +72,10 @@ classdef Geom2d
             pol{end+1} = [a.boundX';a.boundY'];
             for i = 1:length(pol)
                 len = size(pol{i},2);
+                % Check if we are dealing with a line or polygon
                 if len > 1
+                    % Loop over the edges and compute 
+                    % separation
                     for j = 1:len
                         edge(1,1) = pol{i}(1,j);
                         edge(1,2) = pol{i}(2,j);
@@ -80,8 +85,9 @@ classdef Geom2d
                         else
                             edge(2,1) = pol{i}(1,j+1);
                             edge(2,2) = pol{i}(2,j+1);
-                        end                        
+                        end     
                         sep = Geom2d.sepPointEdgeDir(x,y,vec,edge);
+                        % Check if separation should be updated.
                         if (sep < minSep)
                             minSep = sep;
                         end
@@ -97,7 +103,7 @@ classdef Geom2d
         end
         
         % Function used to find the separation from a point (x,y)
-        % to an edge in a particular direction, given by vec
+        % to an edge in a particular direction, given by vec.
         % Useful for laser read
         function sep = sepPointEdgeDir(x,y,vec,edge)
             % Help obtained from here
@@ -186,57 +192,21 @@ classdef Geom2d
             end
         end
         
-        function testPoints()
-            filename = 'environments/env2.txt';
+        function test()
+            disp('Simply test for points being inside a circle (red)');
+            filename = 'environments/env1.txt';
             a = Environment;
             a = a.readFile(filename);
             x = 4;
             y = 4;
             rad = 2;
-            Geom2d.pointsInsideCircle(x,y,a,rad);
+            points = Geom2d.pointsInsideCircle(x,y,a,rad);
             a.showEnv();
             Draw.disc([x y],rad);
-        end
-        
-        function test2()
-            filename = 'environments/env.txt';
-            a = Environment;
-            a = a.readFile(filename);
-            dir = [0;1];
-            b = deg2rad(-60);
-            R = [cos(b),-sin(b);sin(b),cos(b)];
-            % Calculating the vector
-            vec = R*dir;
-            % disp(Geom2d.closestPoint(6,1,vec,a,10));   
-            disp(Geom2d.sepPointEdgeDir(6,1,vec,[10,10;10,0]));
-            disp(Geom2d.onEdge([10,3.3094],[10,10;10,0]));
-            a.showEnv();
-        end
-        
-        function [] = test(filename)
-            if nargin < 1
-                filename = 'environments/env.txt';
-            end
-            
-            disp('Showing environment.');
-            a = Environment;
-            a = a.readFile(filename);
-            a.showEnv(); % Show the entire environment.
-            
-            disp('Showing estimated environment.');
-            polygonSet = {};
-            polygonSet{1} = [[2, 4, 4]; [2, 2, 7]];
-            polygonSet{2} = [[6, 9, 9, 7.5]; [8, 8, 9, 9]];
-            Draw.polygons(polygonSet, [0, 0.3, 0.6]);
-            alpha(0.3);
-            
-            disp('Showing intersection set.');
-            set = Geom2d.polygonSetIntersect(polygonSet, a.polygons);
-            Draw.polygons(set, [0, 0.8, 0]);
-            alpha(0.3);
-            
-            disp('Calculates intersected area.');
-            disp(['Area:', num2str(Geom2d.polygonSetArea(set))])
+            disp(points);
+            hold on
+            plot(points(:,1), points(:,2), 'ro', 'LineWidth', 4);
+            hold off
         end
     end
 end

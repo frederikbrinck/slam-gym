@@ -2,7 +2,7 @@
 	Created by Mufei Li on 2017/05/07.
 
 	Implementation of Odometry class, a super 
-	class for Robot.
+	class for Robot. Odometry handles all movement of the robot.
 %}
 
 classdef Odometry < handle
@@ -59,20 +59,6 @@ classdef Odometry < handle
     	% Move in direction dx, dy and dtheta and update the position
         % correctly. The move function manipulates the ground truth.
     	function pos = move(obj, dx, dy, dtheta)
-    		% Make sure our robot moves reasonably.
-    		if dx > obj.maxDist
-    			dx = obj.maxDist;
-    		end
-    		if dy > obj.maxDist
-    			dy = obj.maxDist;
-    		end
-    		if dtheta > obj.maxTheta
-    			dtheta = obj.maxTheta;
-            end
-            if dtheta < -obj.maxTheta
-    			dtheta = -obj.maxTheta;
-    		end
-
     		obj.x = obj.x + dx;
     		obj.y = obj.y + dy;
     		obj.theta = obj.theta + dtheta;
@@ -98,6 +84,7 @@ classdef Odometry < handle
                 t = -obj.maxTheta;
             end
             
+            % Move the ground truth without noise.
             obj.move(s * cosd(t + obj.theta), s * sind(t + obj.theta), t);
 
             % Get noise and return position with noise accordingly.
@@ -106,7 +93,7 @@ classdef Odometry < handle
                 update = [0 0];
                 noise = [0 0];
             elseif s == 0
-                % Only rotation, so rotation noise.
+                % Only rotation, so add rotation noise.
                 update = [0 t];
                 noise = [0 ; noise(2) .* Noise.gaussian(1,1)];
             else

@@ -45,10 +45,11 @@ classdef Sensing < handle
         %   y       the real y position of the robot
         %   dir     the direction of the robot
         % It returns an array of distances to the closest obstacle for
-        % various angles (determined by angle and resolution)
+        % various angles (determined by angle and resolution).
+        % Note that this is currently not in use, since we are only dealing
+        % with points.
         function read = laserRead(obj, x, y, dir)
-            % Use Geom2.d to do math.
-            % We read obj.angle radians from startVec to endVec
+            % We read obj.angle radians from startAng to endAng
             % We read angles in degrees based on the resolution
             read = ones(round(obj.angle/obj.resolution)+1,1);
             startAng = -obj.angle/2;
@@ -141,6 +142,8 @@ classdef Sensing < handle
         % noise. The reading is a long array of distance measures 
         % scanning from left to right. There should be resolution/angle
         % (in degree) number of readings. Use Noise.m to add noise.
+        % Note that this function is not in use; rather we add noise
+        % manually in the Algorithm class.
         function read = laserReadNoisy(obj, x, y, dir)
            % Use obj.laserRead and add noise.
            cleanRead = obj.laserRead(x,y,dir);
@@ -151,17 +154,18 @@ classdef Sensing < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods(Static)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Show a test of the laser scan.
         function s = test(filename)
             if nargin < 1
-                filename = 'environments/env.txt';
+                filename = 'environments/env1.txt';
             end
             a = Environment;
             a = a.readFile(filename);
             res = 5;
-            limit = 10;
+            limit = 3;
             angle = 180;
             s = Sensing(a,res,angle,limit,1);
-            x = 8;
+            x = 4;
             y = 2;
             dir = randi([-5 5], 2,1);
             disp('Sensing');
@@ -173,9 +177,10 @@ classdef Sensing < handle
             s.plotScan(x,y,dir,read);
         end
         
+        % Show a test of the points scan.
         function s = testPoints(filename)
             if nargin < 1
-                filename = 'environments/env2.txt';
+                filename = 'environments/env1.txt';
             end
             a = Environment;
             a = a.readFile(filename);
@@ -183,7 +188,7 @@ classdef Sensing < handle
             a.showEnv();
             x = 7;
             y = 6;
-            dir = -30;
+            dir = 140;
             disp('Sensing');
             read = s.laserReadPoints(x,y,dir);
             s.plotPoints(x,y,dir,read);

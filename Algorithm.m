@@ -2,7 +2,7 @@
   Created by Mufei Li on 2017/05/04.
   Modified by Frederik Jensen 2017/05/12  
 
-  The main algorithm run by Slam.m. This algorithm should be responsible
+  The main algorithm run by Slam.m. This algorithm is responsible
   for estimating the robots position and mapping out the terrain. 
   The implementation is based off of EKF and is using the file EKF2. 
   Unfortunately, it is currently not working.
@@ -10,12 +10,7 @@
 
 classdef Algorithm < Robot
     properties
-        landmarks;
-        landmarkId = 1;
-        maxAssociateError = 0.5
-        maxLandmarkError = 0.2;
-        ekf;
-        db;
+        ekf; % EKF handle
     end
     
     methods
@@ -43,8 +38,7 @@ classdef Algorithm < Robot
             M = diag(m.^2);
             
             % Initialise EKF and the landmark database.
-            obj.ekf = EKF2([x y theta], s, S, m, M);
-            obj.db = LandmarkDatabase();
+            obj.ekf = EKF([x y theta], s, S, m, M);
         end
         
         % The main loop run by Slam.m algorithm WITHOUT using EKF
@@ -76,9 +70,7 @@ classdef Algorithm < Robot
             [x, y, theta] = obj.ekf.state();
             [signal, noise]= obj.moveNoisy([x y theta], s, t, [0.1 ; 0.05]);
             % Do the prediction
-            disp(obj.ekf.x(1:3))
             obj.ekf.predict(signal', noise');
-            disp(obj.ekf.x(1:3))
             
             % Perform laser scan and loop over all observed landmarks
             observations = obj.laserReadPoints();

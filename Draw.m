@@ -1,7 +1,6 @@
 %{
-	Draw class.
-
-    Explanation goes here...
+	Draw gives utensils for drawing polygons on the scene using
+    the patch functions.
 %}
 
 classdef Draw
@@ -26,18 +25,25 @@ classdef Draw
             end 
         end
         
-        % Draw an arrow disc with p1=[x y] onto the robot
+        % Draw an arrow disc with p1=[x y] onto the robot of radius r and
+        % direction dir given in degrees.
         function arr = arrow(p1,r,dir)
+            % Get direction in rad
             a = deg2rad(dir);
+            % Sz is the angle of the arrow tip and p2
+            % a point in the direction given.
             sz = deg2rad(20);
             p2 = [p1(1)+r*cos(a);p1(2)+r*sin(a)];
+            % Compute arrow tails
             tailL = [p1(1)+r*0.7*cos(a+sz);p1(2)+r*0.7*sin(a+sz)];
             tailR = [p1(1)+r*0.7*cos(a-sz);p1(2)+r*0.7*sin(a-sz)];
+            % Draw the arrow.
             arr(1) = plot([p1(1),p2(1)],[p1(2),p2(2)], 'black');
             arr(2) = plot([p2(1),tailR(1)],[p2(2),tailR(2)], 'black');
             arr(3) = plot([p2(1),tailL(1)],[p2(2),tailL(2)], 'black');
         end
         
+        % Draw a line segment from a to b with color c.
         function segment(a, b, c)
             if nargin < 3
                 c = [1, 1, 1];
@@ -46,7 +52,8 @@ classdef Draw
         end
         
         % Draw a disc with pos=[x y] of colour c and radius r onto the c
-        % current figure.
+        % current figure. Allow for having a disc of smaller angle, say
+        % a half disk (angle=180°) and give it a rotation as dir.
         function d = disc(pos, r, angle, dir, c)
             if nargin == 4
                 c = [0,1,0];

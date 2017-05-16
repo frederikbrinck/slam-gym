@@ -1,7 +1,8 @@
 %{
-	Environment class.
+	Environment class adapted from the SSS project. This class
+    can read points, lines and polygons. Currently, however, our
+    implementation only works with points - and the EKF slam doesn't work.
 
-    Explanation goes here...
 %}
 
 classdef Environment < handle
@@ -65,7 +66,8 @@ classdef Environment < handle
                 tline = fgetl(fileDesc);
             end
             
-            % Add bound box to polygons
+            % Uncomment this if bounding box should be part of the
+            % polygons.
             % obj.Polygons{size(obj.Polygons,2) + 1} = mapshape(obj.bound.x, obj.bound.y, 'Geometry', 'polygon', 'bound',true);    
          end
 
