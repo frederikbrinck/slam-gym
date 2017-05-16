@@ -11,7 +11,7 @@ classdef (Sealed) Slam < handle
        robot;
        algorithm;
        % Booleans for GUI logic.
-       usingEkf = true;
+       usingEkf = false;
        drawnRobot;
        scan;
        scanShown = false;
@@ -307,6 +307,10 @@ classdef (Sealed) Slam < handle
         s.robot.sensing.env = a;
         s.robot.x = a.start(1);
         s.robot.y = a.start(2); 
+        s.up = false;
+        s.down = false;
+        s.left = false;
+        s.right = false;
       end      
    end
 end

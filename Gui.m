@@ -60,7 +60,7 @@ guidata(hObject, handles);
 set(handles.algMenu, 'Value', 1);
 set(handles.envMenu, 'Value', 1);
 set(handles.quitText,'String','');
-set(handles.moveText,'String','Move with arrow keys!');
+set(handles.moveText,'String','Automated Motion Planning');
 cla;
 Slam.initialize();
 
@@ -202,6 +202,10 @@ else
     set(handles.hideScan, 'Value', 1);
     s.startFlag = false;
     s.stopSimulation();
+    s.up = false;
+    s.down = false;
+    s.left = false;
+    s.right = false;
     cla;
 end
 
